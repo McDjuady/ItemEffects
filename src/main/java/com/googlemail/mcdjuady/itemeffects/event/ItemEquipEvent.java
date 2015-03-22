@@ -17,16 +17,14 @@ import org.bukkit.inventory.ItemStack;
  *
  * @author Max
  */
-public class ItemEquipEvent extends PlayerEvent{
+public class ItemEquipEvent extends PlayerItemEvent{
     
     private final static HandlerList handlers = new HandlerList();
     
-    private final ItemStack item;
     private final int slot;
     
     public ItemEquipEvent(Player player, ItemStack item, int slot) {
-        super(player);
-        this.item = item;
+        super(player, item);
         this.slot = slot;
     }
     
@@ -40,14 +38,7 @@ public class ItemEquipEvent extends PlayerEvent{
     public static HandlerList getHandlerList() {
         return handlers;
     }
-
-    /**
-     * @return the item
-     */
-    public ItemStack getItem() {
-        return item;
-    }
-
+    
     /**
      * @return the slot
      */

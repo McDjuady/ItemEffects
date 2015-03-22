@@ -6,24 +6,23 @@
 package com.googlemail.mcdjuady.itemeffects.event;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.HandlerList;
+import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.inventory.ItemStack;
 
 /**
  *
  * @author Max
  */
-public class ItemDeselectEvent extends PlayerItemEvent{
+public abstract class PlayerItemEvent extends PlayerEvent{
     
-    private final static HandlerList handlers = new HandlerList();
+    private final ItemStack item;
     
-    public ItemDeselectEvent(Player player, ItemStack item) {
-        super(player,item);
+    public PlayerItemEvent(Player player, ItemStack item) {
+        super(player);
+        this.item = item;
     }
     
-    @Override
-    public HandlerList getHandlers() {
-        return handlers;
+    public ItemStack getItem() {
+        return item;
     }
-    
 }

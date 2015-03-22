@@ -14,6 +14,7 @@ import com.googlemail.mcdjuady.itemeffects.ItemEffects;
 import com.googlemail.mcdjuady.itemeffects.FilterGroups;
 import com.googlemail.mcdjuady.itemeffects.event.ItemEquipEvent;
 import com.googlemail.mcdjuady.itemeffects.event.ItemSelectEvent;
+import com.googlemail.mcdjuady.itemeffects.event.PlayerItemEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -73,19 +74,8 @@ public class LevelEffect extends Effect {
         tasks = new HashMap<>();
     }
     
-    @EffectHandler(ItemSelectEvent.class)
-    public void onSelect(EffectData data, Player player, ItemSelectEvent e) {
-        int requiredLevel = data.get(0);
-        int playerLevel = player.getLevel();
-        if (requiredLevel > playerLevel) {
-            if (!tasks.containsKey(player.getUniqueId())) {
-                tasks.put(player.getUniqueId(), new EffectTask(this,player).runTaskTimer(ItemEffects.getInstance(), 0, 10).getTaskId());
-            }
-        }
-    }
-
-    @EffectHandler(ItemEquipEvent.class)
-    public void onEquip(EffectData data, Player player, ItemEquipEvent e) {
+    @EffectHandler({ItemEquipEvent.class,ItemSelectEvent.class})
+    public void onEquip(EffectData data, Player player, PlayerItemEvent e) {
         int requiredLevel = data.get(0);
         int playerLevel = player.getLevel();
         if (requiredLevel > playerLevel) {
