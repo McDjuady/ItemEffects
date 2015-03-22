@@ -1,0 +1,9 @@
+## YAML Template.
+---
+name: ItemEffects
+author: McDjuady
+main: com.googlemail.mcdjuady.itemeffects.ItemEffects
+version: 0.1-SNAPSHOT
+commands:
+    iEnchant:
+        usage: /<command> EFFECT [Data]

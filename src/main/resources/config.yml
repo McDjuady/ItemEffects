@@ -1,0 +1,27 @@
+## YAML Template.
+---
+#[39,38,37,36]
+EffectSlots: 
+    39:
+        Filter: HELMET
+    38:
+        Filter: CHEST
+    37:
+        Filter: LEGS
+    36:
+        Filter: BOOTS
+    InHand:
+        Filter: [SWORD,BOW,TOOL]        
+BurnEffect:
+    Name: '+%1$d%% Burn-Chance (%2$d sec)'
+    BurnChance: 20
+    BurnDuration: max5
+LevelEffect:
+    Name: 'Level %1$s'
+    Level: max5
+DodgeEffect:
+    Name: '+%1$d%% Dodge'
+    DodgeChance: 10
+HealthEffect:
+    Name: '+%1$d Health'
+    Health: 10
