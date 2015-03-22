@@ -70,14 +70,12 @@ public class EffectManager {
         }
     }
 
-    private final Map<Class<? extends Event>, List<EffectMethodPair>> listeners;
     private final Map<String, Class<? extends Effect>> effectClasses;
     private final Map<Class<? extends Effect>, Map<Class<? extends Event>, List<EffectListenerMethod>>> effectListeners;
     private final Map<String, Effect> effects;
     private final Map<UUID, ActiveEffects> playerEffects;
 
     public EffectManager() {
-        listeners = new HashMap<>();
         effects = new HashMap<>();
         playerEffects = new HashMap<>();
         effectClasses = new HashMap<>();
@@ -102,7 +100,7 @@ public class EffectManager {
             if (params.length != 3 || !EffectData.class.isAssignableFrom(params[0]) || !Player.class.isAssignableFrom(params[1]) || !Event.class.isAssignableFrom(params[2])) {
                 continue; //wrong parameters
             }
-            Map<Class<? extends Event>,List<EffectListenerMethod>> map = effectListeners.get(effectClass);
+            Map<Class<? extends Event>, List<EffectListenerMethod>> map = effectListeners.get(effectClass);
             if (map == null) {
                 map = new HashMap<>();
                 effectListeners.put(effectClass, map);
@@ -121,7 +119,7 @@ public class EffectManager {
             }
         }
     }
-    
+
     public Effect createEffect(ConfigurationSection section) {
         if (!section.contains("EffectId")) {
             return null;
@@ -131,7 +129,7 @@ public class EffectManager {
         if (effectClass == null) {
             return null;
         }
-        
+
         try {
             Constructor<? extends Effect> constructor = effectClass.getConstructor(ConfigurationSection.class);
             return constructor.newInstance(section);
@@ -141,7 +139,7 @@ public class EffectManager {
         }
         return null;
     }
-    
+
     public void createEffects(ConfigurationSection section) {
         for (String key : section.getKeys(false)) {
             ConfigurationSection effectInfo = section.getConfigurationSection(key);
@@ -151,72 +149,18 @@ public class EffectManager {
             }
         }
     }
-    
-    public void registerEffect(Effect effect) {
-        String effectName = effect.getName();
-        if (effects.containsKey(effectName)) {
-            return; //TODO throw exception?
-        }
-        effects.put(effectName, effect);
-        Method[] methods = effect.getClass().getMethods();
-        for (Method method : methods) {
-            EffectHandler annotation = method.getAnnotation(EffectHandler.class);
-            if (annotation == null) {
-                Bukkit.getLogger().log(Level.INFO, "Method {0} doesn't have an annotation", method.getName());
-                continue;
-            }
-            Class<?>[] params = method.getParameterTypes();
-            if (params.length != 3 || !EffectData.class.isAssignableFrom(params[0]) || !Player.class.isAssignableFrom(params[1]) || !Event.class.isAssignableFrom(params[2])) {
-                continue;
-            }
-            for (Class<? extends Event> eventClass : annotation.value()) {
-                if (!params[2].isAssignableFrom(eventClass)) {
-                    Bukkit.getLogger().log(Level.INFO, "EventClass {0} isn't Assignable for {1}", new Object[]{eventClass.getName(), params[2].getName()});
-                    continue;
-                }
-                List<EffectMethodPair> eventList = listeners.get(eventClass);
-                if (eventList == null) {
-                    eventList = new ArrayList<>();
-                    listeners.put(eventClass, eventList);
-                }
-                eventList.add(new EffectMethodPair(effect, method));
-            }
-        }
-    }
 
-    public void fireEvent2(ActiveEffects effectData, Event e) {
-        if (effectData.isEmpty()) {
-            return;
-        }
-        for (Entry<Effect,EffectData> entry : effectData.getEntrySet()) {
-            Map<Class<? extends Event>,List<EffectListenerMethod>> effectMap = effectListeners.get(entry.getKey().getClass());
-            List<EffectListenerMethod> methods = effectMap.get(e.getClass());
-            for (EffectListenerMethod method : methods) {
-                method.invoke(entry.getKey(), entry.getValue(), effectData.getPlayer(), e);
-            }
-        }
-    }
-    
     public void fireEvent(ActiveEffects effectData, Event e) {
         if (effectData.isEmpty()) {
             return;
         }
-        List<EffectMethodPair> list = listeners.get(e.getClass());
-        if (list == null) {
-            Bukkit.getLogger().log(Level.INFO, "Null list for {0}", e.getClass().getName());
-            return;
-        }
-        for (EffectMethodPair pair : list) {
-            EffectData data = effectData.getEffectData(pair.getEffect());
-            if (data == null) {
-                Bukkit.getLogger().log(Level.INFO, "Skip {0}", pair.getEffect().getName());
-                continue; //only fire for effects that are active
-            }
-            try {
-                pair.getMethod().invoke(pair.getEffect(), effectData.getEffectData(pair.getEffect()), effectData.getPlayer(), e);
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                Bukkit.getLogger().log(Level.INFO, "Failed to call method {0} with {1} for {2}", new Object[]{pair.getMethod().getName(), e.getClass().getName(), pair.getEffect().getName()});
-                Bukkit.getLogger().log(Level.INFO, null, ex);
+        for (Entry<Effect, EffectData> entry : effectData.getEntrySet()) {
+            Map<Class<? extends Event>, List<EffectListenerMethod>> effectMap = effectListeners.get(entry.getKey().getClass());
+            List<EffectListenerMethod> methods = effectMap.get(e.getClass());
+            if (methods != null) {
+                for (EffectListenerMethod method : methods) {
+                    method.invoke(entry.getKey(), entry.getValue(), effectData.getPlayer(), e);
+                }
             }
         }
     }

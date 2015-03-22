@@ -80,11 +80,7 @@ public class ActiveEffects {
         Bukkit.getLogger().log(Level.INFO, "ActiveEffects: {0}", effects.toString());
     }
     
-    public Set<Effect> getActiveEffects() {
-        return effects.keySet();
-    }
-    
-    public Set<Map.Entry<Effect,EffectData>> getEntrySet() {
+    protected Set<Map.Entry<Effect,EffectData>> getEntrySet() {
         return effects.entrySet();
     }
     

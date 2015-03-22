@@ -51,14 +51,12 @@ public class ItemEffects extends JavaPlugin{
         ConfigurationSection slotsSection = getConfig().getConfigurationSection("EffectSlots");
         createFilters(slotsSection);
         effectManager = new EffectManager();
-        Effect burn = new BurnEffect(getConfig().getConfigurationSection("BurnEffect"));
-        Effect level = new LevelEffect(getConfig().getConfigurationSection("LevelEffect"));
-        Effect dodge = new DodgeEffect(getConfig().getConfigurationSection("DodgeEffect"));
-        Effect health = new HealthEffect(getConfig().getConfigurationSection("HealthEffect"));
-        effectManager.registerEffect(burn);
-        effectManager.registerEffect(level);
-        effectManager.registerEffect(dodge);
-        effectManager.registerEffect(health);
+        effectManager.registerEffectClass("BurnEffect", BurnEffect.class);
+        effectManager.registerEffectClass("LevelEffect", LevelEffect.class);
+        effectManager.registerEffectClass("DodgeEffect", DodgeEffect.class);
+        effectManager.registerEffectClass("HealthEffect", HealthEffect.class);
+        ConfigurationSection effectsSection = getConfig().getConfigurationSection("Effects");
+        effectManager.createEffects(effectsSection);
         Bukkit.getPluginManager().registerEvents(new EffectListener(effectManager), this);
         this.getCommand("iEnchant").setExecutor(new CommandEnchant());
     }

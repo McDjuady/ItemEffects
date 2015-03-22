@@ -54,8 +54,8 @@ public class LevelEffect extends Effect {
                 return;
             }
             Bukkit.getLogger().log(Level.INFO, "Run for {0}", player.getName());
-            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 19, 50, true, false), true);
-            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 19, 50, true, false), true);
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 39, 50, true, false), true);
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 39, 50, true, false), true);
         }
         
     }
