@@ -15,7 +15,7 @@ EffectSlots:
 Effects:
     BurnEffect:
         EffectId: BurnEffect
-        Name: '+%1$d%% Burn-Chance (%2$d sec)'
+        Name: '%1$+d%% Burn-Chance (%2$d sec)'
         BurnChance: 20
         BurnDuration: max5
     LevelEffect:
@@ -24,7 +24,7 @@ Effects:
         Level: max5
     DodgeEffect:
         EffectId: DodgeEffect
-        Name: '+%1$d%% Dodge'
+        Name: '%1$+d%% Dodge'
         DodgeChance: 10
     HealthEffect:
         EffectId: HealthEffect

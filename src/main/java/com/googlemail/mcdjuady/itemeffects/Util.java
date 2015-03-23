@@ -33,7 +33,7 @@ public class Util {
         return str.replaceAll(String.valueOf(ChatColor.COLOR_CHAR), "");
     }
 
-    private final static Pattern dataPattern = Pattern.compile("^\\|(\\w+(-\\w+)*)\\|");
+    private final static Pattern dataPattern = Pattern.compile("^\\|(\\w+(!\\w+)*)\\|");
 
     public static List<EffectData> getItemEffects(ItemStack item) {
         if (item == null || !item.hasItemMeta()) {
@@ -64,7 +64,7 @@ public class Util {
         }
         String info = matcher.group().substring(1);
         info = info.substring(0, info.length() - 1);
-        String[] split = info.split("-");
+        String[] split = info.split("!");
         Effect effect = ItemEffects.getInstance().getEffectManager().getEffect(split[0]);
         return effect != null ? new EffectData(effect,split) : null;
     }

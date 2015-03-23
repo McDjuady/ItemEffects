@@ -11,6 +11,7 @@ import com.googlemail.mcdjuady.itemeffects.ItemEffects;
 import com.googlemail.mcdjuady.itemeffects.Util;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -52,13 +53,13 @@ public class CommandEnchant implements CommandExecutor {
         String effectInfo = "|"+effect.getName();
         if (data.length > 0) {
             for (String string : data) {
-                effectInfo += "-"+string;
+                effectInfo += "!"+string;
             }
         }
         effectInfo += "|";
         EffectData effectData = Util.getEffectData(effectInfo);
         List<Integer> intData = effectData.getData();
-        Bukkit.getLogger().info("Format for "+effect.getHumanName()+" with "+intData.toString());
+        Bukkit.getLogger().log(Level.INFO, "Format for {0} with {1}", new Object[]{effect.getHumanName(), intData.toString()});
         String name = String.format(effect.getHumanName(),intData.toArray());
         ItemMeta meta = itemInHand.getItemMeta();
         List<String> lore = meta.getLore();
