@@ -10,6 +10,7 @@ import com.googlemail.mcdjuady.itemeffects.effects.BurnEffect;
 import com.googlemail.mcdjuady.itemeffects.effects.DodgeEffect;
 import com.googlemail.mcdjuady.itemeffects.effects.HealthEffect;
 import com.googlemail.mcdjuady.itemeffects.effects.LevelEffect;
+import com.googlemail.mcdjuady.itemeffects.effects.ResistanceEffect;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,8 +56,10 @@ public class ItemEffects extends JavaPlugin{
         effectManager.registerEffectClass("LevelEffect", LevelEffect.class);
         effectManager.registerEffectClass("DodgeEffect", DodgeEffect.class);
         effectManager.registerEffectClass("HealthEffect", HealthEffect.class);
+        effectManager.registerEffectClass("ResistanceEffect", ResistanceEffect.class);
         ConfigurationSection effectsSection = getConfig().getConfigurationSection("Effects");
         effectManager.createEffects(effectsSection);
+        Bukkit.getPluginManager().registerEvents(new DamageChangeListener(), this);
         Bukkit.getPluginManager().registerEvents(new EffectListener(effectManager), this);
         this.getCommand("iEnchant").setExecutor(new CommandEnchant());
     }

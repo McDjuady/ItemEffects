@@ -17,7 +17,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -39,12 +41,28 @@ public class EffectListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
+        if (e.getDamager() instanceof Player) {
+            ActiveEffects playerEffects = manager.getActiveEffects((Player) e.getDamager());
+            manager.fireEvent(playerEffects, e);
+        }
         if (e.getEntity() instanceof Player) {
             ActiveEffects playerEffects = manager.getActiveEffects((Player) e.getEntity());
             manager.fireEvent(playerEffects, e);
         }
-        if (e.getDamager() instanceof Player) {
-            ActiveEffects playerEffects = manager.getActiveEffects((Player) e.getDamager());
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onEntityDamageByBlock(EntityDamageByBlockEvent e) {
+        if (e.getEntity() instanceof Player) {
+            ActiveEffects playerEffects = manager.getActiveEffects((Player) e.getEntity());
+            manager.fireEvent(playerEffects, e);
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onEntityDamageEvent(EntityDamageEvent e) {
+        if (e.getEntity() instanceof Player) {
+            ActiveEffects playerEffects = manager.getActiveEffects((Player) e.getEntity());
             manager.fireEvent(playerEffects, e);
         }
     }
@@ -124,7 +142,7 @@ public class EffectListener implements Listener {
             Bukkit.getLogger().info("Empty effects");
             return;
         }
-        Map<Integer,ItemFilter> activeSlots = ItemEffects.getInstance().getEffectSlots();
+        Map<Integer, ItemFilter> activeSlots = ItemEffects.getInstance().getEffectSlots();
         for (int i : activeSlots.keySet()) {
             ItemStack item = inv.getItem(i);
             if (activeSlots.get(i).isValid(item)) {

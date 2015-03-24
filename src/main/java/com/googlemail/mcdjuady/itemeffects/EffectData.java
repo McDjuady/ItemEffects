@@ -20,36 +20,36 @@ public class EffectData {
 
     private static abstract class Combiner {
 
-        private static final Pattern pattern = Pattern.compile("\\d+");
+        private static final Pattern pattern = Pattern.compile("^\\d+(.\\d+)?");
 
-        public abstract Integer combine(Integer i1, Integer i2);
+        public abstract Double combine(Double i1, Double i2);
 
-        public static final Integer getValue(String info) {
+        public static final Double getValue(String info) {
             Matcher matcher = pattern.matcher(info);
             if (matcher.find()) {
-                return Integer.valueOf(matcher.group());
+                return Double.valueOf(matcher.group());
             }
-            return 0;
+            return 0D;
         }
 
     }
 
     private static class AddCombiner extends Combiner {
 
-        public static final Pattern pattern = Pattern.compile("^([+,-])?\\d+$");
+        public static final Pattern pattern = Pattern.compile("^([+,-])?\\d+(.\\d+)?$");
 
         @Override
-        public Integer combine(Integer i1, Integer i2) {
+        public Double combine(Double i1, Double i2) {
             return i1 + i2;
         }
     }
 
     private static class MinCombiner extends Combiner {
 
-        public static final Pattern pattern = Pattern.compile("^min\\d+$");
+        public static final Pattern pattern = Pattern.compile("^min\\d+(.\\d+)?$");
 
         @Override
-        public Integer combine(Integer i1, Integer i2) {
+        public Double combine(Double i1, Double i2) {
             return Math.min(i1, i2);
         }
 
@@ -57,20 +57,20 @@ public class EffectData {
 
     private static class MaxCombiner extends Combiner {
 
-        public static final Pattern pattern = Pattern.compile("^max\\d+$");
+        public static final Pattern pattern = Pattern.compile("^max\\d+(.\\d+)?$");
 
         @Override
-        public Integer combine(Integer i1, Integer i2) {
+        public Double combine(Double i1, Double i2) {
             return Math.max(i1, i2);
         }
 
     }
 
     private final Effect effect;
-    private final List<Integer> data;
+    private final List<Double> data;
     private final List<Combiner> combiners;
 
-    private EffectData(Effect effect, List<Integer> data, List<Combiner> combiners) {
+    private EffectData(Effect effect, List<Double> data, List<Combiner> combiners) {
         this.data = data;
         this.effect = effect;
         this.combiners = combiners;
@@ -106,14 +106,14 @@ public class EffectData {
         if (effectData == null || !effect.equals(effectData.effect)) {
             return null;
         }
-        List<Integer> newData = new ArrayList<>();
+        List<Double> newData = new ArrayList<>();
         for (int i = 0; i < data.size() && i < effectData.data.size(); i++) {
             newData.add(combiners.get(i).combine(data.get(i), effectData.data.get(i)));
         }
         return new EffectData(getEffect(), newData, combiners);
     }
 
-    public int get(int i) {
+    public double get(int i) {
         return data.get(i);
     }
 
@@ -121,7 +121,7 @@ public class EffectData {
         return data.size();
     }
 
-    public List<Integer> getData() {
+    public List<Double> getData() {
         return data;
     }
 

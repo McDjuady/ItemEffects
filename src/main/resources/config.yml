@@ -13,20 +13,36 @@ EffectSlots:
     InHand:
         Filter: [SWORD,BOW,TOOL]
 Effects:
-    BurnEffect:
+    Burn:
         EffectId: BurnEffect
         Name: '%1$+d%% Burn-Chance (%2$d sec)'
         BurnChance: 20
         BurnDuration: max5
-    LevelEffect:
+    Level:
         EffectId: LevelEffect
         Name: 'Level %1$s'
         Level: max5
-    DodgeEffect:
+    Dodge:
         EffectId: DodgeEffect
+        DamageType: ENTITY_ATTACK
         Name: '%1$+d%% Dodge'
         DodgeChance: 10
-    HealthEffect:
+    FireResist:
+        EffectId: ResistanceEffect
+        DamageType: FIRE
+        Name: '%1$+.1f Fire Resistance'
+        ResistAmount: 0.5
+    WitherResist:
+        EffectId: ResistanceEffect
+        DamageType: WITHER
+        Name: '%1$+.1f Wither Resistance'
+        ResistAmount: 0.5
+    PoisonResist:
+        EffectId: ResistanceEffect
+        DamageType: POISON
+        Name: '%1$+.1f Poison Resistance'
+        ResistAmount: 0.5
+    Health:
         EffectId: HealthEffect
         Name: '+%1$d Health'
         Health: 10

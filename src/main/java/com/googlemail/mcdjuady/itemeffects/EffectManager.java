@@ -27,31 +27,6 @@ import org.bukkit.event.Event;
  */
 public class EffectManager {
 
-    public class EffectMethodPair {
-
-        private final Effect effect;
-        private final Method method;
-
-        public EffectMethodPair(Effect effect, Method method) {
-            this.effect = effect;
-            this.method = method;
-        }
-
-        /**
-         * @return the effect
-         */
-        public Effect getEffect() {
-            return effect;
-        }
-
-        /**
-         * @return the method
-         */
-        public Method getMethod() {
-            return method;
-        }
-    }
-
     private class EffectListenerMethod {
 
         private final Method method;
@@ -62,6 +37,7 @@ public class EffectManager {
 
         public void invoke(Effect effect, EffectData data, Player player, Event event) {
             try {
+                Bukkit.getLogger().log(Level.INFO, "Invoke {0}", method.getName());
                 method.invoke(effect, data, player, event);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 Bukkit.getLogger().log(Level.INFO, "Failed to call method {0} with {1} for {2}", new Object[]{method.getName(), event.getClass().getName(), effect.getName()});
@@ -154,6 +130,7 @@ public class EffectManager {
         if (effectData.isEmpty()) {
             return;
         }
+        Bukkit.getLogger().log(Level.INFO, "Call {0}", e.getEventName());
         for (Entry<Effect, EffectData> entry : effectData.getEntrySet()) {
             Map<Class<? extends Event>, List<EffectListenerMethod>> effectMap = effectListeners.get(entry.getKey().getClass());
             List<EffectListenerMethod> methods = effectMap.get(e.getClass());
@@ -161,6 +138,8 @@ public class EffectManager {
                 for (EffectListenerMethod method : methods) {
                     method.invoke(entry.getKey(), entry.getValue(), effectData.getPlayer(), e);
                 }
+            } else {
+                Bukkit.getLogger().log(Level.INFO, "No Methods for {0} in effect {1}", new Object[]{e.getEventName(), entry.getKey().getName()});
             }
         }
     }

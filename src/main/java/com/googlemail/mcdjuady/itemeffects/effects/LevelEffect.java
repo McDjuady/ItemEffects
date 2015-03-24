@@ -76,7 +76,7 @@ public class LevelEffect extends Effect {
     
     @EffectHandler({ItemEquipEvent.class,ItemSelectEvent.class})
     public void onEquip(EffectData data, Player player, PlayerItemEvent e) {
-        int requiredLevel = data.get(0);
+        double requiredLevel = data.get(0);
         int playerLevel = player.getLevel();
         if (requiredLevel > playerLevel) {
             if (!tasks.containsKey(player.getUniqueId())) {

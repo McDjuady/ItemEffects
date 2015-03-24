@@ -58,7 +58,7 @@ public class CommandEnchant implements CommandExecutor {
         }
         effectInfo += "|";
         EffectData effectData = Util.getEffectData(effectInfo);
-        List<Integer> intData = effectData.getData();
+        List<Double> intData = effectData.getData();
         Bukkit.getLogger().log(Level.INFO, "Format for {0} with {1}", new Object[]{effect.getHumanName(), intData.toString()});
         String name = String.format(effect.getHumanName(),intData.toArray());
         ItemMeta meta = itemInHand.getItemMeta();

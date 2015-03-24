@@ -41,10 +41,10 @@ public class BurnEffect extends Effect {
             return;
         }
         Entity damagee = event.getEntity();
-        int chance = data.get(0);
+        double chance = data.get(0);
         Bukkit.getLogger().log(Level.INFO, "Try burn (chance {0})", chance);
         if (chance > random.nextInt(100)) {
-            damagee.setFireTicks(data.get(1) * 20);
+            damagee.setFireTicks((int)Math.round(data.get(1)) * 20);
         }
     }
 }

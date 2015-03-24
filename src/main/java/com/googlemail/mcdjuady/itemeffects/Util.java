@@ -33,7 +33,7 @@ public class Util {
         return str.replaceAll(String.valueOf(ChatColor.COLOR_CHAR), "");
     }
 
-    private final static Pattern dataPattern = Pattern.compile("^\\|(\\w+(!\\w+)*)\\|");
+    private final static Pattern dataPattern = Pattern.compile("^\\|(\\w+(\\.\\d)?(!\\w+(\\.\\d)?)*)\\|");
 
     public static List<EffectData> getItemEffects(ItemStack item) {
         if (item == null || !item.hasItemMeta()) {
