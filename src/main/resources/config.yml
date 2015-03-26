@@ -16,33 +16,45 @@ Effects:
     Burn:
         EffectId: BurnEffect
         Name: '%1$+d%% Burn-Chance (%2$d sec)'
-        BurnChance: 20
-        BurnDuration: max5
+        EffectConfig:
+            BurnChance: 20
+            BurnTime: 5
     Level:
         EffectId: LevelEffect
         Name: 'Level %1$s'
-        Level: max5
+        EffectConfig:
+            Level: 5
     Dodge:
         EffectId: DodgeEffect
-        DamageType: ENTITY_ATTACK
         Name: '%1$+d%% Dodge'
-        DodgeChance: 10
+        EffectConfig:
+            DodgeChance: 10
     FireResist:
         EffectId: ResistanceEffect
-        DamageType: FIRE
         Name: '%1$+.1f Fire Resistance'
-        ResistAmount: 0.5
+        EffectConfig:
+            ResistType: FIRE
+            ResistAmount: 0.5
     WitherResist:
         EffectId: ResistanceEffect
-        DamageType: WITHER
         Name: '%1$+.1f Wither Resistance'
-        ResistAmount: 0.5
+        EffectConfig:
+            ResistType: WITHER
+            ResistAmount: 0.5
     PoisonResist:
         EffectId: ResistanceEffect
-        DamageType: POISON
         Name: '%1$+.1f Poison Resistance'
-        ResistAmount: 0.5
+        EffectConfig:
+            ResistType: POISON
+            ResistAmount: 0.5
     Health:
         EffectId: HealthEffect
-        Name: '+%1$d Health'
-        Health: 10
+        Name: '%+Health% Health'
+        EffectConfig:
+            Health: 10
+    Defense:
+        EffectId: DefenseEffect
+        Name: '%+Defense% Defense'
+        EffectConfig:
+            Defense: 5
+        

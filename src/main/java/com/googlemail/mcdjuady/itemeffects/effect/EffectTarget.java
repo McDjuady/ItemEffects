@@ -3,22 +3,21 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.googlemail.mcdjuady.itemeffects;
+package com.googlemail.mcdjuady.itemeffects.effect;
 
+import com.googlemail.mcdjuady.itemeffects.filter.FilterGroups;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.bukkit.event.Event;
 
 /**
  *
  * @author Max
  */
-@Target(ElementType.METHOD)
+@Target(ElementType.ANNOTATION_TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface EffectHandler {
+public @interface EffectTarget {
     
-    Class<? extends Event>[] value();
-    
+    FilterGroups[] value();
 }

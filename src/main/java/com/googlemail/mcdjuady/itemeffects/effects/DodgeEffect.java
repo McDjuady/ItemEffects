@@ -5,37 +5,42 @@
  */
 package com.googlemail.mcdjuady.itemeffects.effects;
 
-import com.googlemail.mcdjuady.itemeffects.ActiveEffects;
-import com.googlemail.mcdjuady.itemeffects.Effect;
-import com.googlemail.mcdjuady.itemeffects.EffectData;
-import com.googlemail.mcdjuady.itemeffects.EffectHandler;
-import com.googlemail.mcdjuady.itemeffects.EffectTarget;
-import com.googlemail.mcdjuady.itemeffects.FilterGroups;
+import com.googlemail.mcdjuady.itemeffects.effect.Effect;
+import com.googlemail.mcdjuady.itemeffects.effect.EffectData;
+import com.googlemail.mcdjuady.itemeffects.effect.EffectDataOption;
+import com.googlemail.mcdjuady.itemeffects.effect.EffectHandler;
+import com.googlemail.mcdjuady.itemeffects.effect.EffectOptions;
 import java.util.Random;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.inventory.ItemStack;
 
 /**
  *
  * @author Max
  */
 
-@EffectTarget(FilterGroups.ARMOR)
+@EffectOptions(global = true, dataOptions = {
+    @EffectDataOption(key = "DodgeChance", value = "5.0")
+})
 public class DodgeEffect extends Effect{
     
     private final Random random = new Random();
     
-    public DodgeEffect(ConfigurationSection effectConfig) {
-        super(effectConfig);
-        String chance = effectConfig.getString("DodgeChance");
-        setDefaultData(new String[]{chance});
+    public DodgeEffect(ConfigurationSection effectConfig, ItemStack item, String lore) throws InvalidConfigurationException {
+        super(effectConfig, item, lore);
+    }
+
+    public DodgeEffect(ConfigurationSection effectConfig, ItemStack item, String[] args) throws InvalidConfigurationException {
+        super(effectConfig, item, args);
     }
     
     @EffectHandler(EntityDamageByEntityEvent.class)
     public void onEntityDamage(EffectData data, Player player, EntityDamageByEntityEvent e) {
         if (e.getEntity().equals(player)) {
-            double chance = data.get(0);
+            double chance = data.getDouble("DodgeChance");
             if (chance > random.nextInt(100)) {
                 e.setCancelled(true);
             }

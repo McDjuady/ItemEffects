@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.googlemail.mcdjuady.itemeffects;
+package com.googlemail.mcdjuady.itemeffects.filter;
 
 import java.util.ArrayList;
 import java.util.Collections;

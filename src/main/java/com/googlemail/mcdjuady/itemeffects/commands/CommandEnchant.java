@@ -5,8 +5,8 @@
  */
 package com.googlemail.mcdjuady.itemeffects.commands;
 
-import com.googlemail.mcdjuady.itemeffects.Effect;
-import com.googlemail.mcdjuady.itemeffects.EffectData;
+import com.googlemail.mcdjuady.itemeffects.effect.Effect;
+import com.googlemail.mcdjuady.itemeffects.effect.EffectData;
 import com.googlemail.mcdjuady.itemeffects.ItemEffects;
 import com.googlemail.mcdjuady.itemeffects.Util;
 import java.util.ArrayList;
@@ -39,36 +39,10 @@ public class CommandEnchant implements CommandExecutor {
             sender.sendMessage("No item in hand");
             return true;
         }
-        Effect effect = ItemEffects.getInstance().getEffectManager().getEffect(args[0]);
+        Effect effect = ItemEffects.getInstance().getEffectManager().enchant(args[0], itemInHand, args);
         if (effect == null) {
-            sender.sendMessage("Invalid effect");
-            return true;
+            sender.sendMessage("Failed to enchant! See console for details");
         }
-        String[] data = effect.getDefaultData();
-        if (args.length > 1) {
-            for (int i = 0; i < data.length && i < args.length - 1; i++) {
-                data[i] = args[i+1];
-            }
-        }
-        String effectInfo = "|"+effect.getName();
-        if (data.length > 0) {
-            for (String string : data) {
-                effectInfo += "!"+string;
-            }
-        }
-        effectInfo += "|";
-        EffectData effectData = Util.getEffectData(effectInfo);
-        List<Double> intData = effectData.getData();
-        Bukkit.getLogger().log(Level.INFO, "Format for {0} with {1}", new Object[]{effect.getHumanName(), intData.toString()});
-        String name = String.format(effect.getHumanName(),intData.toArray());
-        ItemMeta meta = itemInHand.getItemMeta();
-        List<String> lore = meta.getLore();
-        if (lore == null) {
-            lore = new ArrayList<>();
-        }
-        lore.add(Util.hideString(effectInfo) + ChatColor.translateAlternateColorCodes('$',name));
-        meta.setLore(lore);
-        itemInHand.setItemMeta(meta);
         return true;
     }
 

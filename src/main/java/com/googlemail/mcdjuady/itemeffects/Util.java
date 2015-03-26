@@ -32,40 +32,4 @@ public class Util {
     public static String unhideString(String str) {
         return str.replaceAll(String.valueOf(ChatColor.COLOR_CHAR), "");
     }
-
-    private final static Pattern dataPattern = Pattern.compile("^\\|(\\w+(\\.\\d)?(!\\w+(\\.\\d)?)*)\\|");
-
-    public static List<EffectData> getItemEffects(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) {
-            return null;
-        }
-        List<String> lore = item.getItemMeta().getLore();
-        if (lore == null || lore.isEmpty()) {
-            return null;
-        }
-        List<EffectData> retList = new ArrayList<>();
-        for (String string : lore) {
-            EffectData data = getEffectData(string);
-            if (data != null) {
-                retList.add(data);
-            }
-        }
-        Bukkit.getLogger().log(Level.INFO, "ItemEffects {0}", retList.toString());
-        return retList;
-    }
-
-    public static EffectData getEffectData(String string) {
-        string = Util.unhideString(string);
-        Bukkit.getLogger().log(Level.INFO, "getData() {0}", string);
-        Matcher matcher = dataPattern.matcher(string);
-        if (!matcher.find()) {
-            Bukkit.getLogger().log(Level.INFO, "missmatch");
-            return null;
-        }
-        String info = matcher.group().substring(1);
-        info = info.substring(0, info.length() - 1);
-        String[] split = info.split("!");
-        Effect effect = ItemEffects.getInstance().getEffectManager().getEffect(split[0]);
-        return effect != null ? new EffectData(effect,split) : null;
-    }
 }

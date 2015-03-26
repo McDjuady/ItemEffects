@@ -5,29 +5,40 @@
  */
 package com.googlemail.mcdjuady.itemeffects.effects;
 
-import com.googlemail.mcdjuady.itemeffects.Effect;
-import com.googlemail.mcdjuady.itemeffects.EffectData;
-import com.googlemail.mcdjuady.itemeffects.EffectHandler;
+import com.googlemail.mcdjuady.itemeffects.effect.Effect;
+import com.googlemail.mcdjuady.itemeffects.effect.EffectData;
+import com.googlemail.mcdjuady.itemeffects.effect.EffectDataOption;
+import com.googlemail.mcdjuady.itemeffects.effect.EffectHandler;
+import com.googlemail.mcdjuady.itemeffects.effect.EffectOptions;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.inventory.ItemStack;
 
 /**
  *
  * @author Max
  */
+@EffectOptions(dataOptions = {
+    @EffectDataOption(key = "ResistType", dataClass = String.class, value = "ENTITY_ATTACK"),
+    @EffectDataOption(key = "ResistAmount", value = "5.0"),
+})
 public class ResistanceEffect extends Effect{
     
     private final DamageCause resistanceType;
     
-    public ResistanceEffect(ConfigurationSection effectConfig) {
-        super(effectConfig);
-        resistanceType = DamageCause.valueOf(effectConfig.getString("DamageType"));
-        String chance = effectConfig.getString("ResistAmount");
-        setDefaultData(new String[]{chance});
+    public ResistanceEffect(ConfigurationSection effectConfig, ItemStack item, String lore) throws InvalidConfigurationException {
+        super(effectConfig, item, lore);
+        resistanceType = DamageCause.valueOf(getEffectData().getString("ResistType"));
+    }
+
+    public ResistanceEffect(ConfigurationSection effectConfig, ItemStack item, String[] args) throws InvalidConfigurationException {
+        super(effectConfig, item, args);
+        resistanceType = DamageCause.valueOf(getEffectData().getString("ResistType"));
     }
     
     @EffectHandler({EntityDamageByBlockEvent.class,EntityDamageByEntityEvent.class,EntityDamageEvent.class})
@@ -35,7 +46,7 @@ public class ResistanceEffect extends Effect{
         if (!e.getEntity().equals(player)) {
             return;
         }
-        double amount = data.get(0);
+        double amount = data.getDouble("ResistAmount");
         if (resistanceType == e.getCause()) {
             e.setDamage(e.getDamage() - amount);
         }

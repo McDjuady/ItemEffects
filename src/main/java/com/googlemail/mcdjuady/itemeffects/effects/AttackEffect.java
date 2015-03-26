@@ -5,31 +5,38 @@
  */
 package com.googlemail.mcdjuady.itemeffects.effects;
 
-import com.googlemail.mcdjuady.itemeffects.ActiveEffects;
-import com.googlemail.mcdjuady.itemeffects.Effect;
-import com.googlemail.mcdjuady.itemeffects.EffectData;
-import com.googlemail.mcdjuady.itemeffects.EffectHandler;
+import com.googlemail.mcdjuady.itemeffects.effect.Effect;
+import com.googlemail.mcdjuady.itemeffects.effect.EffectData;
+import com.googlemail.mcdjuady.itemeffects.effect.EffectDataOption;
+import com.googlemail.mcdjuady.itemeffects.effect.EffectHandler;
+import com.googlemail.mcdjuady.itemeffects.effect.EffectOptions;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.inventory.ItemStack;
 
 /**
  *
  * @author Max
  */
-public class AttackEffect extends Effect{
+@EffectOptions(dataOptions = {
+    @EffectDataOption(key = "Amount", dataClass = Integer.class, value = "5")})
+public class AttackEffect extends Effect {
 
-    public AttackEffect(ConfigurationSection effectConfig) {
-        super(effectConfig);
-        String amount = effectConfig.getString("Amount");
-        setDefaultData(new String[]{amount});
+    public AttackEffect(ConfigurationSection effectConfig, ItemStack item, String lore) throws InvalidConfigurationException {
+        super(effectConfig, item, lore);
     }
-    
+
+    public AttackEffect(ConfigurationSection effectConfig, ItemStack item, String[] args) throws InvalidConfigurationException {
+        super(effectConfig, item, args);
+    }
+
     @EffectHandler(EntityDamageByEntityEvent.class)
     public void onEntityDamageByEntity(EffectData data, Player player, EntityDamageByEntityEvent event) {
         if (event.getDamager().equals(player)) {
-            event.setDamage(event.getDamage() + data.get(0));
+            event.setDamage(event.getDamage() + data.getInt("Amount"));
         }
     }
-    
+
 }

@@ -5,8 +5,13 @@
  */
 package com.googlemail.mcdjuady.itemeffects;
 
+import com.googlemail.mcdjuady.itemeffects.effect.EffectItemListener;
+import com.googlemail.mcdjuady.itemeffects.filter.FilterGroups;
+import com.googlemail.mcdjuady.itemeffects.filter.ItemFilter;
 import com.googlemail.mcdjuady.itemeffects.commands.CommandEnchant;
+import com.googlemail.mcdjuady.itemeffects.commands.CommandGlobal;
 import com.googlemail.mcdjuady.itemeffects.effects.BurnEffect;
+import com.googlemail.mcdjuady.itemeffects.effects.DefenseEffect;
 import com.googlemail.mcdjuady.itemeffects.effects.DodgeEffect;
 import com.googlemail.mcdjuady.itemeffects.effects.HealthEffect;
 import com.googlemail.mcdjuady.itemeffects.effects.LevelEffect;
@@ -57,11 +62,14 @@ public class ItemEffects extends JavaPlugin{
         effectManager.registerEffectClass("DodgeEffect", DodgeEffect.class);
         effectManager.registerEffectClass("HealthEffect", HealthEffect.class);
         effectManager.registerEffectClass("ResistanceEffect", ResistanceEffect.class);
+        effectManager.registerEffectClass("DefenseEffect", DefenseEffect.class);
         ConfigurationSection effectsSection = getConfig().getConfigurationSection("Effects");
-        effectManager.createEffects(effectsSection);
+        effectManager.registerEffects(effectsSection);
         Bukkit.getPluginManager().registerEvents(new DamageChangeListener(), this);
-        Bukkit.getPluginManager().registerEvents(new EffectListener(effectManager), this);
+        Bukkit.getPluginManager().registerEvents(new EffectItemListener(effectManager), this);
+        Bukkit.getPluginManager().registerEvents(new EffectEventListener(effectManager), this);
         this.getCommand("iEnchant").setExecutor(new CommandEnchant());
+        this.getCommand("global").setExecutor(new CommandGlobal());
     }
     
     private void createFilters(ConfigurationSection slotsSection) {
