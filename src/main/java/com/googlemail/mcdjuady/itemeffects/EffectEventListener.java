@@ -9,6 +9,7 @@ import com.googlemail.mcdjuady.itemeffects.effect.PlayerEffects;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -25,7 +26,7 @@ public class EffectEventListener implements Listener{
         this.manager = manager;
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onEntityDamage(EntityDamageEvent e) {
         if (e.getEntity().getType() == EntityType.PLAYER) {
             PlayerEffects effects = manager.getPlayerEffects((Player)e.getEntity());
@@ -33,7 +34,7 @@ public class EffectEventListener implements Listener{
         }
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onEntityDamageByBlock(EntityDamageByBlockEvent e) {
         if (e.getEntity().getType() == EntityType.PLAYER) {
             PlayerEffects effects = manager.getPlayerEffects((Player)e.getEntity());
@@ -41,12 +42,16 @@ public class EffectEventListener implements Listener{
         }
     }
     
-    @EventHandler
-    public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
+    @EventHandler(priority = EventPriority.LOW)
+    public void onEntityAttack(EntityDamageByEntityEvent e) {
         if (e.getDamager().getType() == EntityType.PLAYER) {
             PlayerEffects effects = manager.getPlayerEffects((Player)e.getDamager());
             manager.fireEvent(effects, e);
         }
+    }
+    
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
         if (e.getEntity().getType() == EntityType.PLAYER) {
             PlayerEffects effects = manager.getPlayerEffects((Player)e.getEntity());
             manager.fireEvent(effects, e);

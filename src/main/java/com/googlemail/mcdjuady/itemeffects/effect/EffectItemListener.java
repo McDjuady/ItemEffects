@@ -6,13 +6,9 @@
 package com.googlemail.mcdjuady.itemeffects.effect;
 
 import com.googlemail.mcdjuady.itemeffects.EffectManager;
-import com.googlemail.mcdjuady.itemeffects.effect.PlayerEffects;
 import com.googlemail.mcdjuady.itemeffects.filter.FilterGroups;
 import com.googlemail.mcdjuady.itemeffects.ItemEffects;
-import com.googlemail.mcdjuady.itemeffects.ItemEffects;
 import com.googlemail.mcdjuady.itemeffects.filter.ItemFilter;
-import java.util.logging.Level;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -28,10 +24,10 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  *
@@ -98,6 +94,12 @@ public class EffectItemListener implements Listener {
     public void onItemDrop(PlayerDropItemEvent event) {
         PlayerEffects pEffects = manager.getPlayerEffects(event.getPlayer());
         new DelayedInventoryUpdate(pEffects, true).runTaskLater(ItemEffects.getInstance(), 1); //only update inHand since drops from within the inventory are already handled in onInventoryClick
+    }
+    
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onItemPickup(PlayerPickupItemEvent event) {
+        PlayerEffects pEffects = manager.getPlayerEffects(event.getPlayer());
+        new DelayedInventoryUpdate(pEffects, false).runTaskLater(ItemEffects.getInstance(), 1);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

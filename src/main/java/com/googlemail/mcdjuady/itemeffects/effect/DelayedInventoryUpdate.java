@@ -24,7 +24,6 @@ class DelayedInventoryUpdate extends BukkitRunnable {
 
     @Override
     public void run() {
-        Bukkit.getLogger().log(Level.INFO, "Delayed update {0}", inHandOnly);
         if (inHandOnly) {
             playerEffects.updateItemInHand();
         } else {

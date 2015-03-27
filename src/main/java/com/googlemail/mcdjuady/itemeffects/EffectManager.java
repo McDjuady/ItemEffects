@@ -42,7 +42,6 @@ public class EffectManager {
 
         public void invoke(Effect effect, EffectData data, Player player, Event event) {
             try {
-                Bukkit.getLogger().log(Level.INFO, "Invoke {0}", method.getName());
                 method.invoke(effect, data, player, event);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 Bukkit.getLogger().log(Level.INFO, "Failed to call method {0} with {1} for {2}", new Object[]{method.getName(), event.getClass().getName(), effect.getEffectName()});
@@ -89,7 +88,6 @@ public class EffectManager {
     public Effect createEffect(String effectName, ItemStack item, String lore) {
         EffectInfo info = effects.get(effectName.toLowerCase());
         if (info == null) {
-            Bukkit.getLogger().info("Null info");
             return null;
         }
         try {
@@ -195,15 +193,12 @@ public class EffectManager {
 
     //fire for a specific event
     public void fireEvent(PlayerEffects effects, Effect effect, Event event) {
-        Bukkit.getLogger().log(Level.INFO, "Event {0} for {1}", new Object[]{event.getEventName(), effect.getEffectName()});
         Map<Class<? extends Effect>, List<EffectListenerMethod>> listeners = eventListeners.get(event.getClass());
         if (listeners == null) {
-            Bukkit.getLogger().info("nullListeners");
             return;
         }
         List<EffectListenerMethod> methods = listeners.get(effect.getClass());
         if (methods == null) {
-            Bukkit.getLogger().info("nullMethods");
             return;
         }
         for (EffectListenerMethod method : methods) {

@@ -5,9 +5,6 @@
  */
 package com.googlemail.mcdjuady.itemeffects.effect;
 
-import java.util.logging.Level;
-import org.bukkit.Bukkit;
-
 /**
  *
  * @author Max
@@ -21,7 +18,6 @@ public class EffectDataAddCombiner implements EffectDataCombiner<Number>{
 
     @Override
     public Number remove(Number t1, Number t2) {
-        Bukkit.getLogger().log(Level.INFO, "Remove {0} {1}", new Object[]{t1, t2});
         return t1.doubleValue() - t2.doubleValue();
     }
     

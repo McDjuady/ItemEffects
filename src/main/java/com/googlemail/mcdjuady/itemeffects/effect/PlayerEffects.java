@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -131,7 +130,6 @@ public class PlayerEffects {
                 if (nameMatcher.find()) {
                     String effectName = nameMatcher.group();
                     effectName = effectName.substring(1, effectName.length() - 1);
-                    Bukkit.getLogger().info(effectName);
                     Effect effect = manager.createEffect(effectName, item, info);
                     if (effect == null) {
                         continue;
@@ -179,11 +177,10 @@ public class PlayerEffects {
             effectList.remove(effect);
         }
         if (effectList == null || effectList.isEmpty()) {
-            Bukkit.getLogger().info("Empty Global");
             Effect globalEffect = globalEffects.remove(effectName);
             ItemEffects.getInstance().getEffectManager().fireEvent(this, globalEffect, new GlobalDeactivateEvent(player, globalEffectData.get(effectName)));
             globalEffectData.remove(effectName);
-            uncacheEffect(effect);
+            uncacheEffect(globalEffect);
             return;
         }
 

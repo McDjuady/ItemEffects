@@ -18,7 +18,7 @@ import org.bukkit.configuration.ConfigurationSection;
  *
  * @author Max
  */
-public class EffectData {
+public class EffectData implements Cloneable{
 
     private final Map<String, Object> data;
     private final Map<String, EffectDataCombiner> combiners;
@@ -70,7 +70,8 @@ public class EffectData {
     }
 
     public Boolean getBoolean(String key) {
-        return Boolean.valueOf(getString(key));
+        Object o = get(key);
+        return o instanceof Boolean ? (Boolean) o : Boolean.valueOf(String.valueOf(o));
     }
 
     public String getString(String key) {
@@ -83,20 +84,19 @@ public class EffectData {
 
     public void combine(EffectData otherData) {
         for (String key : data.keySet()) {
-            data.put(key, combiners.get(key).combine(data.get(key), otherData.get(key)));
+            data.put(key, combiners.get(key).combine(get(key), otherData.get(key)));
         }
     }
 
     public void remove(EffectData otherData) {
         for (String key : data.keySet()) {
-            data.put(key, combiners.get(key).remove(data.get(key), otherData.get(key)));
+            data.put(key, combiners.get(key).remove(get(key), otherData.get(key)));
         }
     }
 
     @Override
     public EffectData clone() {
         try {
-            Bukkit.getLogger().info("Clone");
             Constructor<? extends EffectData> constructor = this.getClass().getConstructor(Map.class, Map.class);
             return constructor.newInstance(new HashMap<>(data), new HashMap<>(combiners));
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
