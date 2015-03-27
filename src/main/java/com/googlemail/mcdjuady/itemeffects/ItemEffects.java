@@ -10,12 +10,6 @@ import com.googlemail.mcdjuady.itemeffects.filter.FilterGroups;
 import com.googlemail.mcdjuady.itemeffects.filter.ItemFilter;
 import com.googlemail.mcdjuady.itemeffects.commands.CommandEnchant;
 import com.googlemail.mcdjuady.itemeffects.commands.CommandGlobal;
-import com.googlemail.mcdjuady.itemeffects.effects.BurnEffect;
-import com.googlemail.mcdjuady.itemeffects.effects.DefenseEffect;
-import com.googlemail.mcdjuady.itemeffects.effects.DodgeEffect;
-import com.googlemail.mcdjuady.itemeffects.effects.HealthEffect;
-import com.googlemail.mcdjuady.itemeffects.effects.LevelEffect;
-import com.googlemail.mcdjuady.itemeffects.effects.ResistanceEffect;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +39,6 @@ public class ItemEffects extends JavaPlugin{
     private EffectManager effectManager;
     private Map<Integer,ItemFilter> effectSlots;
     private ItemFilter inHandFilter;
-    //TODO slotFilter
     
     @Override
     public void onEnable() {
@@ -57,15 +50,6 @@ public class ItemEffects extends JavaPlugin{
         ConfigurationSection slotsSection = getConfig().getConfigurationSection("EffectSlots");
         createFilters(slotsSection);
         effectManager = new EffectManager();
-        effectManager.registerEffectClass("BurnEffect", BurnEffect.class);
-        effectManager.registerEffectClass("LevelEffect", LevelEffect.class);
-        effectManager.registerEffectClass("DodgeEffect", DodgeEffect.class);
-        effectManager.registerEffectClass("HealthEffect", HealthEffect.class);
-        effectManager.registerEffectClass("ResistanceEffect", ResistanceEffect.class);
-        effectManager.registerEffectClass("DefenseEffect", DefenseEffect.class);
-        ConfigurationSection effectsSection = getConfig().getConfigurationSection("Effects");
-        effectManager.registerEffects(effectsSection);
-        Bukkit.getPluginManager().registerEvents(new DamageChangeListener(), this);
         Bukkit.getPluginManager().registerEvents(new EffectItemListener(effectManager), this);
         Bukkit.getPluginManager().registerEvents(new EffectEventListener(effectManager), this);
         this.getCommand("iEnchant").setExecutor(new CommandEnchant());
@@ -74,7 +58,6 @@ public class ItemEffects extends JavaPlugin{
     
     private void createFilters(ConfigurationSection slotsSection) {
         for (String key : slotsSection.getKeys(false)) {
-            Bukkit.getLogger().log(Level.INFO, "Try {0}", key);
             if (key.equalsIgnoreCase("InHand")) {
                 ConfigurationSection section = slotsSection.getConfigurationSection(key);
                 if (section != null && section.contains("Filter")) {
@@ -96,10 +79,7 @@ public class ItemEffects extends JavaPlugin{
                     if (filters == null || filters.isEmpty()) {
                         filters = new ArrayList<>();
                         filters.add(section.getString("Filter"));
-                        Bukkit.getLogger().log(Level.INFO, "Filter: {0}", section.getString("Filter"));
                     }
-                    Bukkit.getLogger().log(Level.INFO, "Filters: {0}", filters.toString());
-                    Bukkit.getLogger().log(Level.INFO, "SectionKeys: {0}", section.getKeys(true));
                     effectSlots.put(Integer.valueOf(key), new ItemFilter(filters));
                 } else {
                     //Default filter
@@ -123,11 +103,6 @@ public class ItemEffects extends JavaPlugin{
                 }
             }
         }
-        getLogger().info("Effect Slots:");
-        for (int i : effectSlots.keySet()) {
-            getLogger().log(Level.INFO, "{0}: {1}", new Object[]{i,effectSlots.get(i).toString()});
-        }
-        getLogger().log(Level.INFO, "InHand: {0}",inHandFilter.toString());
     }
     
     private void updateConfig() {

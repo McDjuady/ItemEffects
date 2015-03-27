@@ -20,7 +20,7 @@ import org.bukkit.Bukkit;
  */
 public class EffectDataHelper {
 
-    private final static String basePattern = "!%1$s=((\\d*(\\.\\d+)?)|\\w+)(!|\\|)";
+    private final static String basePattern = "!%1$s=(((-|\\+)?\\d+(\\.\\d+)?)|\\w+)(!|\\|)";
 
     private final EffectDataOption option;
     private Method valueOf;
@@ -29,7 +29,7 @@ public class EffectDataHelper {
 
     public EffectDataHelper(EffectDataOption option) {
         this.option = option;
-        this.pattern = Pattern.compile(String.format(basePattern, option.key()));
+        this.pattern = Pattern.compile(String.format(basePattern, option.key().toLowerCase()));
         try {
             this.valueOf = option.dataClass().getMethod("valueOf", String.class);
         } catch (NoSuchMethodException | SecurityException ex) {
@@ -63,7 +63,7 @@ public class EffectDataHelper {
     }
 
     public Matcher matcher(String string) {
-        return pattern.matcher(string);
+        return pattern.matcher(string.toLowerCase());
     }
 
     public String key() {

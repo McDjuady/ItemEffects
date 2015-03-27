@@ -6,21 +6,13 @@
 package com.googlemail.mcdjuady.itemeffects.commands;
 
 import com.googlemail.mcdjuady.itemeffects.effect.Effect;
-import com.googlemail.mcdjuady.itemeffects.effect.EffectData;
 import com.googlemail.mcdjuady.itemeffects.ItemEffects;
-import com.googlemail.mcdjuady.itemeffects.Util;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  *

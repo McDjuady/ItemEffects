@@ -12,49 +12,4 @@ EffectSlots:
         Filter: BOOTS
     InHand:
         Filter: [SWORD,BOW,TOOL]
-Effects:
-    Burn:
-        EffectId: BurnEffect
-        Name: '%1$+d%% Burn-Chance (%2$d sec)'
-        EffectConfig:
-            BurnChance: 20
-            BurnTime: 5
-    Level:
-        EffectId: LevelEffect
-        Name: 'Level %1$s'
-        EffectConfig:
-            Level: 5
-    Dodge:
-        EffectId: DodgeEffect
-        Name: '%1$+d%% Dodge'
-        EffectConfig:
-            DodgeChance: 10
-    FireResist:
-        EffectId: ResistanceEffect
-        Name: '%1$+.1f Fire Resistance'
-        EffectConfig:
-            ResistType: FIRE
-            ResistAmount: 0.5
-    WitherResist:
-        EffectId: ResistanceEffect
-        Name: '%1$+.1f Wither Resistance'
-        EffectConfig:
-            ResistType: WITHER
-            ResistAmount: 0.5
-    PoisonResist:
-        EffectId: ResistanceEffect
-        Name: '%1$+.1f Poison Resistance'
-        EffectConfig:
-            ResistType: POISON
-            ResistAmount: 0.5
-    Health:
-        EffectId: HealthEffect
-        Name: '%+Health% Health'
-        EffectConfig:
-            Health: 10
-    Defense:
-        EffectId: DefenseEffect
-        Name: '%+Defense% Defense'
-        EffectConfig:
-            Defense: 5
         

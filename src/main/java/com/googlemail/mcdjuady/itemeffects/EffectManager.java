@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -88,7 +87,7 @@ public class EffectManager {
     }
 
     public Effect createEffect(String effectName, ItemStack item, String lore) {
-        EffectInfo info = effects.get(effectName);
+        EffectInfo info = effects.get(effectName.toLowerCase());
         if (info == null) {
             Bukkit.getLogger().info("Null info");
             return null;
@@ -102,7 +101,7 @@ public class EffectManager {
     }
 
     public Effect enchant(String effectName, ItemStack item, String... args) {
-        EffectInfo info = effects.get(effectName);
+        EffectInfo info = effects.get(effectName.toLowerCase());
         if (info == null) {
             Bukkit.getLogger().log(Level.INFO, "Invalid Effect {0}", effectName);
             return null;
@@ -155,11 +154,12 @@ public class EffectManager {
         Class<? extends Effect> effectClass = effectClasses.get(effectId);
         if (effectClass == null) {
             Bukkit.getLogger().log(Level.WARNING, "Invalid EffectId {0} in {1}", new Object[]{effectId, section.getName()});
+            return;
         }
         try {
             EffectInfo info = new EffectInfo(effectClass, section);
             Bukkit.getLogger().log(Level.INFO, "Resgistered EffectConfig {0} for effect {1}", new Object[]{section.getName(), effectId});
-            effects.put(section.getName(), info);
+            effects.put(section.getName().toLowerCase(), info);
         } catch (NoSuchMethodException ex) {
             Bukkit.getLogger().log(Level.SEVERE, "Failed to register effect " + section.getName() + "!", ex);
         }
@@ -173,7 +173,7 @@ public class EffectManager {
             }
         }
     }
-
+    
     public void fireEvent(PlayerEffects effects, Event event) {
         Map<Class<? extends Effect>, List<EffectListenerMethod>> listeners = eventListeners.get(event.getClass());
         if (listeners == null) {

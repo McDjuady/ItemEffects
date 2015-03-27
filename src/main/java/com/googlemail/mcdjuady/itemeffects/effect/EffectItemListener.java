@@ -103,7 +103,7 @@ public class EffectItemListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerDeath(PlayerDeathEvent event) {
         PlayerEffects pEffects = manager.getPlayerEffects(event.getEntity());
-        new DelayedInventoryUpdate(pEffects, true).runTaskLater(ItemEffects.getInstance(), 1);
+        new DelayedInventoryUpdate(pEffects, false).runTaskLater(ItemEffects.getInstance(), 1);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

@@ -5,8 +5,6 @@
  */
 package com.googlemail.mcdjuady.itemeffects.effect;
 
-import com.googlemail.mcdjuady.itemeffects.filter.ItemFilter;
-import com.googlemail.mcdjuady.itemeffects.Util;
 import com.googlemail.mcdjuady.itemeffects.Util;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -33,8 +31,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 public abstract class Effect {
 
     private final static char dataSperator = '!';
-    private final static Pattern keyPattern = Pattern.compile("%(\\+)?\\S+%");
-    public final static Pattern dataPattern = Pattern.compile("^\\w+=((\\d*(\\.\\d+)?)|\\w+)$");
+    private final static Pattern keyPattern = Pattern.compile("%(\\+)?\\w+%");
+    public final static Pattern dataPattern = Pattern.compile("^\\w+=(((-|\\+)?\\d+(\\.\\d+)?)|\\w+)$");
 
     private final static Set<Class<? extends Effect>> initializedClasses = new HashSet<>();
     private final static Map<Class<? extends Effect>, EffectDataHelper[]> helpers = new HashMap<>();
@@ -145,8 +143,8 @@ public abstract class Effect {
             }
             if (data.contains(key)) {
                 Object value = data.get(key);
-                if (showSign && value instanceof Number) {
-                    sb.append(Math.signum(((Number) value).doubleValue()) == 1 ? '+' : '-');
+                if (showSign && value instanceof Number && Math.signum(((Number) value).doubleValue()) == 1) {
+                    sb.append('+'); //Don't need to append '-' sign, since Number.toString() will return the minus in front
                 }
                 matcher.appendReplacement(sb, Matcher.quoteReplacement(value.toString()));
             } else {

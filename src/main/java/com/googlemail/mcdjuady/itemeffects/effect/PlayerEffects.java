@@ -33,7 +33,7 @@ import org.bukkit.inventory.PlayerInventory;
  */
 public class PlayerEffects {
 
-    private final static Pattern effectPattern = Pattern.compile("^\\|\\w+((!(\\w+)=((\\d*(\\.\\d+)?)|\\w+))+)*\\|");
+    private final static Pattern effectPattern = Pattern.compile("^\\|\\w+((!(\\w+)=(((-|\\+)?\\d+(\\.\\d+)?)|\\w+))+)*\\|");
     private final static Pattern effectNamePattern = Pattern.compile("^\\|\\w+(!|\\|)");
 
     private final Player player;
