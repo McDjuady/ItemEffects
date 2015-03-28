@@ -21,8 +21,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Projectile;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.projectiles.ProjectileSource;
 
 /**
  *
@@ -30,7 +35,7 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 public abstract class Effect {
 
-    private final static char dataSperator = '!';
+    public final static char dataSperator = '!';
     private final static Pattern keyPattern = Pattern.compile("%(\\+)?\\w+%");
     public final static Pattern dataPattern = Pattern.compile("^\\w+=(((-|\\+)?\\d+(\\.\\d+)?)|\\w+)$");
 
@@ -50,34 +55,6 @@ public abstract class Effect {
     public Effect(ConfigurationSection effectConfig, ItemStack item, String effectInfo) throws InvalidConfigurationException {
         this.effectId = effectConfig.getString("EffectId");
         this.effectName = effectConfig.getName();
-        this.humanName = effectConfig.getString("EffectName");
-        this.item = item;
-        EffectOptions options = this.getClass().getAnnotation(EffectOptions.class);
-        if (options == null) {
-            throw new InvalidConfigurationException("Missing options annotations for Effect " + effectName);
-        }
-        this.global = options.global();
-        this.recalculateGlobal = options.recalculateGlobal();
-        initStatic();
-        Constructor<? extends EffectData> constructor = getDataConstructor();
-        if (constructor != null) {
-            try {
-                this.data = constructor.newInstance(getDataHelpers(), effectInfo, effectConfig.getConfigurationSection("EffectConfig"));
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                Bukkit.getLogger().log(Level.SEVERE, "Failed to instantiate DataClass " + options.dataClass().getSimpleName() + " for effect " + effectName + "! Using default EffectData class", ex);
-            }
-        }
-        //use default data if data is not set
-        if (data == null) {
-            this.data = new EffectData(getDataHelpers(), effectInfo, effectConfig.getConfigurationSection("EffectConfig"));
-        }
-
-    }
-
-    //enchant an item
-    public Effect(ConfigurationSection effectConfig, ItemStack item, String[] config) throws InvalidConfigurationException {
-        this.effectId = effectConfig.getString("EffectId");
-        this.effectName = effectConfig.getName();
         this.humanName = effectConfig.getString("Name");
         this.item = item;
         EffectOptions options = this.getClass().getAnnotation(EffectOptions.class);
@@ -87,13 +64,6 @@ public abstract class Effect {
         this.global = options.global();
         this.recalculateGlobal = options.recalculateGlobal();
         initStatic();
-        String effectInfo = "|" + effectName;
-        for (String string : config) {
-            if (dataPattern.matcher(string).matches()) {
-                effectInfo += dataSperator + string;
-            }
-        }
-        effectInfo += "|";
         Constructor<? extends EffectData> constructor = getDataConstructor();
         if (constructor != null) {
             try {
@@ -106,7 +76,7 @@ public abstract class Effect {
         if (data == null) {
             this.data = new EffectData(getDataHelpers(), effectInfo, effectConfig.getConfigurationSection("EffectConfig"));
         }
-        enchant(effectInfo, item);
+
     }
 
     private void initStatic() {
@@ -131,7 +101,9 @@ public abstract class Effect {
         }
     }
 
-    private void enchant(String effectInfo, ItemStack item) {
+    public final void inscribe() {
+        String effectInfo = "|" + effectName + data.toString() + "|";
+        Bukkit.getLogger().log(Level.INFO, "EffectInfo {0}", effectInfo);
         Matcher matcher = keyPattern.matcher(humanName);
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
@@ -153,14 +125,14 @@ public abstract class Effect {
         }
         matcher.appendTail(sb);
         String loreString = Util.hideString(effectInfo) + ChatColor.translateAlternateColorCodes('$', sb.toString());
-        ItemMeta meta = item.getItemMeta();
+        ItemMeta meta = getItem().getItemMeta();
         List<String> lore = meta.getLore();
         if (lore == null) {
             lore = new ArrayList<>();
         }
         lore.add(loreString);
         meta.setLore(lore);
-        item.setItemMeta(meta);
+        getItem().setItemMeta(meta);
     }
 
     public final boolean isGlobal() {
@@ -182,6 +154,17 @@ public abstract class Effect {
     //Inaccurate for globalEffects
     public final ItemStack getItem() {
         return item;
+    }
+    
+    public static Entity getAttacker(EntityDamageByEntityEvent e) {
+        Entity ent = e.getDamager();
+        if (ent instanceof Projectile) {
+            ProjectileSource source = ((Projectile)ent).getShooter();
+            if (source instanceof Entity) {
+                ent = (Entity)source;
+            }
+        }
+        return ent;
     }
 
     private EffectDataHelper[] getDataHelpers() {

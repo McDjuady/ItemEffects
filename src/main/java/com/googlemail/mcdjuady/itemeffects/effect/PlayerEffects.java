@@ -16,9 +16,11 @@ import com.googlemail.mcdjuady.itemeffects.event.GlobalDeactivateEvent;
 import com.googlemail.mcdjuady.itemeffects.event.GlobalUpdateEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.bukkit.Material;
@@ -90,7 +92,8 @@ public class PlayerEffects {
     }
 
     public final void deactivateAll() {
-        for (ItemStack item : itemEffects.keySet()) {
+        Set<ItemStack> items = new HashSet<>(itemEffects.keySet());
+        for (ItemStack item : items) {
             deactivateItem(item);
         }
     }

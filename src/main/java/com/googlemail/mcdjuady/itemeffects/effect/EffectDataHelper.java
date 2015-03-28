@@ -24,9 +24,11 @@ public class EffectDataHelper {
     private Method valueOf;
     private final Pattern pattern;
     private EffectDataCombiner combiner;
+    private boolean canEnchant;
 
     public EffectDataHelper(EffectDataOption option) {
         this.option = option;
+        this.canEnchant = option.canEnchant();
         this.pattern = Pattern.compile(String.format(basePattern, option.key().toLowerCase()));
         try {
             this.valueOf = option.dataClass().getMethod("valueOf", String.class);
@@ -78,6 +80,13 @@ public class EffectDataHelper {
 
     public EffectDataCombiner getCombiner() {
         return combiner;
+    }
+
+    /**
+     * @return the canEnchant
+     */
+    public boolean canEnchant() {
+        return canEnchant;
     }
 
 }

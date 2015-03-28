@@ -5,7 +5,10 @@
  */
 package com.googlemail.mcdjuady.itemeffects;
 
+import com.googlemail.mcdjuady.itemeffects.effect.Effect;
 import com.googlemail.mcdjuady.itemeffects.effect.PlayerEffects;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,41 +22,46 @@ import org.bukkit.event.entity.EntityDamageEvent;
  *
  * @author Max
  */
-public class EffectEventListener implements Listener{
+public class EffectEventListener implements Listener {
+
     private final EffectManager manager;
-    
+
     public EffectEventListener(EffectManager manager) {
         this.manager = manager;
     }
-    
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onEntityDamage(EntityDamageEvent e) {
-        if (e.getEntity().getType() == EntityType.PLAYER) {
-            PlayerEffects effects = manager.getPlayerEffects((Player)e.getEntity());
+        //only fire for events that aren't handled by EntityDamageByEntity or EntityDamageByBlock
+        if (e.getEntity().getType() == EntityType.PLAYER && !(e instanceof EntityDamageByEntityEvent) && !(e instanceof EntityDamageByBlockEvent)) {
+            PlayerEffects effects = manager.getPlayerEffects((Player) e.getEntity());
             manager.fireEvent(effects, e);
         }
     }
-    
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onEntityDamageByBlock(EntityDamageByBlockEvent e) {
         if (e.getEntity().getType() == EntityType.PLAYER) {
-            PlayerEffects effects = manager.getPlayerEffects((Player)e.getEntity());
+            PlayerEffects effects = manager.getPlayerEffects((Player) e.getEntity());
             manager.fireEvent(effects, e);
         }
     }
-    
+
     @EventHandler(priority = EventPriority.LOW)
     public void onEntityAttack(EntityDamageByEntityEvent e) {
-        if (e.getDamager().getType() == EntityType.PLAYER) {
-            PlayerEffects effects = manager.getPlayerEffects((Player)e.getDamager());
+        Entity attacker = Effect.getAttacker(e);
+        if (attacker.getType() == EntityType.PLAYER) {
+            Bukkit.getLogger().info("Fire for attacker");
+            PlayerEffects effects = manager.getPlayerEffects((Player) attacker);
             manager.fireEvent(effects, e);
         }
     }
-    
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
         if (e.getEntity().getType() == EntityType.PLAYER) {
-            PlayerEffects effects = manager.getPlayerEffects((Player)e.getEntity());
+            Bukkit.getLogger().info("Fire for defender");
+            PlayerEffects effects = manager.getPlayerEffects((Player) e.getEntity());
             manager.fireEvent(effects, e);
         }
     }

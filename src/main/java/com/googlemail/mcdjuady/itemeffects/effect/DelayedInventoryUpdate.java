@@ -5,15 +5,13 @@
  */
 package com.googlemail.mcdjuady.itemeffects.effect;
 
-import java.util.logging.Level;
-import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  *
  * @author Max
  */
-class DelayedInventoryUpdate extends BukkitRunnable {
+public class DelayedInventoryUpdate extends BukkitRunnable {
     private final PlayerEffects playerEffects;
     private final boolean inHandOnly;
 

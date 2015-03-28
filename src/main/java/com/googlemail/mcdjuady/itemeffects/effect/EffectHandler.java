@@ -10,6 +10,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.bukkit.event.Event;
+import org.bukkit.event.EventPriority;
 
 /**
  *
@@ -19,6 +20,8 @@ import org.bukkit.event.Event;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EffectHandler {
     
-    Class<? extends Event>[] value();
+    Class<? extends Event>[] events() default {};
+    EventPriority priority() default EventPriority.NORMAL;
+    boolean ignoreCancelled() default false;
     
 }

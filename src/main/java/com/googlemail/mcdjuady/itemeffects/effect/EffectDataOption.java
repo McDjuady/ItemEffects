@@ -21,4 +21,5 @@ public @interface EffectDataOption {
     String value() default "0";
     Class<?> dataClass() default Double.class;
     Class<? extends EffectDataCombiner> combiner() default EffectDataAddCombiner.class;
+    boolean canEnchant() default true;
 }
