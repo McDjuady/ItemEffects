@@ -108,7 +108,7 @@ public class EffectItemListener implements Listener {
         new DelayedInventoryUpdate(pEffects, false).runTaskLater(ItemEffects.getInstance(), 1);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event) {
         manager.onPlayerJoin(event.getPlayer());
     }
