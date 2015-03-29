@@ -6,7 +6,6 @@
 package com.googlemail.mcdjuady.itemeffects.effect;
 
 import com.googlemail.mcdjuady.itemeffects.filter.FilterGroups;
-import com.googlemail.mcdjuady.itemeffects.filter.FilterGroups;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

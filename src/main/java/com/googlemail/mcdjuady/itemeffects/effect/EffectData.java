@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -132,5 +133,34 @@ public class EffectData implements Cloneable {
         }
         return dataString.toString();
     }
+
+    @Override
+    public int hashCode() {
+        int hashCode = 5;
+        hashCode = hashCode * 37 + combiners.hashCode();
+        hashCode = hashCode * 37 + data.hashCode();
+        hashCode = hashCode * 37 + forcedValues.hashCode();
+        return hashCode;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final EffectData other = (EffectData) obj;
+        if (!Objects.equals(this.forcedValues, other.forcedValues)) {
+            return false;
+        }
+        if (!Objects.equals(this.data, other.data)) {
+            return false;
+        }
+        return Objects.equals(this.combiners, other.combiners);
+    }
+    
+    
 
 }

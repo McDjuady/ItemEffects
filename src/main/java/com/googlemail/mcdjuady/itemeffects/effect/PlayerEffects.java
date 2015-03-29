@@ -97,7 +97,7 @@ public class PlayerEffects {
             deactivateItem(item);
         }
     }
-
+    
     public final void updateItemInHand() {
         ItemStack newItem = player.getItemInHand();
         ItemStack oldItem = itemInventory.get(-1);

@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -175,5 +176,48 @@ public abstract class Effect {
     private Constructor<? extends EffectData> getDataConstructor() {
         initStatic();
         return dataConstructor.get(this.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        int hashCode = 7;
+        hashCode = 37 * hashCode + data.hashCode();
+        hashCode = 37 * hashCode + effectId.hashCode();
+        hashCode = 37 * hashCode + effectName.hashCode();
+        hashCode = 37 * hashCode + (global ? 1 : 0);
+        hashCode = 37 * hashCode + humanName.hashCode();
+        hashCode = 37 * hashCode + (item == null ? 0 : item.hashCode());
+        hashCode = 37 * hashCode + (recalculateGlobal ? 1 : 0);
+        return hashCode;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Effect other = (Effect) obj;
+        if (!Objects.equals(this.effectId, other.effectId)) {
+            return false;
+        }
+        if (!Objects.equals(this.effectName, other.effectName)) {
+            return false;
+        }
+        if (!Objects.equals(this.humanName, other.humanName)) {
+            return false;
+        }
+        if (this.global != other.global) {
+            return false;
+        }
+        if (this.recalculateGlobal != other.recalculateGlobal) {
+            return false;
+        }
+        if (!Objects.equals(this.item, other.item)) {
+            return false;
+        }
+        return Objects.equals(this.data, other.data);
     }
 }
