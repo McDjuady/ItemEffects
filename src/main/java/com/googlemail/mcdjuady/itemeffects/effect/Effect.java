@@ -23,7 +23,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
@@ -49,6 +48,7 @@ public abstract class Effect {
     private final String humanName;
     private final boolean global;
     private final boolean recalculateGlobal;
+    private final boolean ignoresDisabled;
     private final ItemStack item;
 
     private EffectData data;
@@ -64,6 +64,7 @@ public abstract class Effect {
         }
         this.global = options.global();
         this.recalculateGlobal = options.recalculateGlobal();
+        this.ignoresDisabled = options.ignoreDisabled();
         initStatic();
         Constructor<? extends EffectData> constructor = getDataConstructor();
         if (constructor != null) {
@@ -103,6 +104,9 @@ public abstract class Effect {
     }
 
     public final void inscribe() {
+        if (getItem() == null) {
+            return;
+        }
         String effectInfo = "|" + effectName + data.toString() + "|";
         Bukkit.getLogger().log(Level.INFO, "EffectInfo {0}", effectInfo);
         Matcher matcher = keyPattern.matcher(humanName);
@@ -144,6 +148,10 @@ public abstract class Effect {
         return recalculateGlobal;
     }
 
+    public final boolean ignoresDisabled() {
+        return ignoresDisabled;
+    }
+    
     public final String getEffectName() {
         return effectName;
     }

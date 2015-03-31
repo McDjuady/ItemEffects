@@ -23,4 +23,5 @@ public @interface EffectOptions {
     Class<? extends EffectData> dataClass() default EffectData.class;
     boolean global() default false; //determines if the effect is fired once or per item
     boolean recalculateGlobal() default false; //determines if the combined data should be recalculatet every time data is removed from the globalEffect (global only)
+    boolean ignoreDisabled() default false;
 }

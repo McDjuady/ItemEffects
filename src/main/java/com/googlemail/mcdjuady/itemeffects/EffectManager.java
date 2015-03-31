@@ -65,18 +65,23 @@ public class EffectManager {
 
     private class EffectInfo {
 
-        private final Class<? extends Effect> effectClass;
         private final Constructor<? extends Effect> defaultConstructor;
         private final ConfigurationSection defaultSection;
 
         public EffectInfo(Class<? extends Effect> effectClass, ConfigurationSection defaultSection) throws NoSuchMethodException {
-            this.effectClass = effectClass;
             this.defaultSection = defaultSection;
             this.defaultConstructor = effectClass.getConstructor(ConfigurationSection.class, ItemStack.class, String.class);
         }
 
         public Effect create(ItemStack item, String info) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             return defaultConstructor.newInstance(defaultSection, item, info);
+        }
+
+        public Effect create(ItemStack item, String info, ConfigurationSection configSection) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            for (String key : defaultSection.getKeys(true)) {
+                configSection.addDefault(key, defaultSection.get(key));
+            }
+            return defaultConstructor.newInstance(configSection, item, info);
         }
 
     }
@@ -102,6 +107,19 @@ public class EffectManager {
             return info.create(item, lore);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Bukkit.getLogger().log(Level.SEVERE, "Failed to create Effect " + effectName + "! Args: [" + item.toString() + ", " + lore + "]", ex);
+            return null;
+        }
+    }
+
+    public Effect createEffect(ItemStack item, ConfigurationSection section) {
+        EffectInfo info = effects.get(section.getName());
+        if (info == null) {
+            return null;
+        }
+        try {
+            return info.create(item, null, section);
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            Bukkit.getLogger().log(Level.SEVERE, "Failed to create Effect " + section.getName() + "! Args: [" + item.toString() + ", " + section.toString() + "]", ex);
             return null;
         }
     }
@@ -213,15 +231,20 @@ public class EffectManager {
                     continue;
                 }
                 for (Effect effect : effectList) {
-                    EffectData data = effect.isGlobal() ? effects.getGlobalData(effect) : effect.getEffectData();
-                    listener.invoke(effect, data, effects.getPlayer(), event);
+                    if (!effects.isDisabled() || effect.ignoresDisabled()) {
+                        EffectData data = effect.isGlobal() ? effects.getGlobalData(effect) : effect.getEffectData();
+                        listener.invoke(effect, data, effects.getPlayer(), event);
+                    }
                 }
             }
         }
     }
-
+    
     //fire for a specific effect
     public void fireEvent(PlayerEffects effects, Effect effect, Event event) {
+        if (effects.isDisabled() && !effect.ignoresDisabled()) {
+            return;
+        }
         Map<Integer, List<RegisteredEffectListener>> newListeners = priorityListeners.get(event.getClass());
         if (newListeners == null) {
             return;

@@ -21,8 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -46,6 +48,8 @@ public class PlayerEffects {
     private final Map<Integer, ItemStack> itemInventory;
     private final Map<Class<? extends Effect>, List<Effect>> effectCache;
 
+    private boolean disabled;
+
     public PlayerEffects(Player player) {
         this.player = player;
         globalEffects = new HashMap<>();
@@ -54,6 +58,7 @@ public class PlayerEffects {
         effectCache = new HashMap<>();
         itemInventory = new HashMap<>();
         globalEffectList = new HashMap<>();
+        disabled = false;
         new DelayedInventoryUpdate(this, false).runTaskLater(ItemEffects.getInstance(), 1);
     }
 
@@ -92,12 +97,12 @@ public class PlayerEffects {
     }
 
     public final void deactivateAll() {
-        Set<ItemStack> items = new HashSet<>(itemEffects.keySet());
+        Set<ItemStack> items = new HashSet<>(itemInventory.values());
         for (ItemStack item : items) {
             deactivateItem(item);
         }
     }
-    
+
     public final void updateItemInHand() {
         ItemStack newItem = player.getItemInHand();
         ItemStack oldItem = itemInventory.get(-1);
@@ -123,7 +128,6 @@ public class PlayerEffects {
         if (lore.isEmpty()) {
             return;
         }
-        item = item.clone(); //we have to clone here since bukkit sometimes messes with the amount
         List<Effect> itemEffectsList = new ArrayList<>();
         EffectManager manager = ItemEffects.getInstance().getEffectManager();
         for (String info : lore) {
@@ -150,6 +154,48 @@ public class PlayerEffects {
         ItemActivateEvent event = new ItemActivateEvent(player, item);
         for (Effect e : itemEffectsList) {
             manager.fireEvent(this, e, event);
+        }
+    }
+
+    public void disable() {
+        for (List<Effect> effects : itemEffects.values()) {
+            for (Effect effect : effects) {
+                if (effect.isGlobal()) {
+                    continue; //globals are handled later
+                }
+                if (!effect.ignoresDisabled()) {
+                    ItemEffects.getInstance().getEffectManager().fireEvent(this, effect, new ItemDeactivateEvent(player, effect.getItem()));
+                }
+            }
+        }
+        for (Effect effect : globalEffects.values()) {
+            if (!effect.ignoresDisabled()) {
+                ItemEffects.getInstance().getEffectManager().fireEvent(this, effect, new GlobalDeactivateEvent(player, getGlobalData(effect)));
+            }
+        }
+        disabled = true;
+    }
+
+    public void enable() {
+        disabled = false;
+        for (List<Effect> effects : itemEffects.values()) {
+            for (Effect effect : effects) {
+                if (effect.isGlobal()) {
+                    continue; //globals are handled later
+                }
+                if (!effect.ignoresDisabled()) {
+                    ItemEffects.getInstance().getEffectManager().fireEvent(this, effect, new ItemActivateEvent(player, effect.getItem()));
+                }
+            }
+        }
+        Bukkit.getLogger().log(Level.INFO, "Global Effects: {0}", globalEffects.values());
+        for (Effect effect : globalEffects.values()) {
+            if (!effect.ignoresDisabled()) {
+                Bukkit.getLogger().log(Level.INFO, "Reactivate {0}", effect.getEffectName());
+                ItemEffects.getInstance().getEffectManager().fireEvent(this, effect, new GlobalActivateEvent(player, getGlobalData(effect)));
+            } else {
+                Bukkit.getLogger().log(Level.INFO, "Skip {0}", effect.getEffectName());
+            }
         }
     }
 
@@ -248,5 +294,9 @@ public class PlayerEffects {
 
     public Player getPlayer() {
         return player;
+    }
+
+    public boolean isDisabled() {
+        return disabled;
     }
 }
