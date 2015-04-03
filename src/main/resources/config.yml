@@ -1,6 +1,23 @@
-## YAML Template.
----
-#[39,38,37,36]
+#Available predefined groups:
+#- HELMET
+#- CHEST
+#- LEGS
+#- BOOTS
+#- ARMOR
+#- SWORD
+#- BOW
+#- HOE
+#- PICKAXE
+#- SPADE
+#- ROD
+#- TOOL
+#- ANY
+#Any of these are valid as a filter as well as any Material
+#Example:
+#1:
+#   Filter: - HELMET
+#           - Material.DIAMOND_SWORD
+#This filter will activate an item in slot 1 if it's a Helmet or a Diamond Sword 
 EffectSlots: 
     39:
         Filter: HELMET

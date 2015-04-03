@@ -112,7 +112,7 @@ public abstract class Effect {
     protected final void setData(String key, Object object, Player player) {
         String oldInfo = "|" + effectName + data.toString() + "|";
         data.set(key, object);
-        String newLore = Util.hideString("|" + effectName + data.toString() + "|") + getHumanName();
+        String newLore = Util.hideString("|" + effectName + data.toString() + "|") + getHumanName(getOwnEffectData());
         ItemStack item = getItem();
         if (item == null) {
             return;
@@ -166,7 +166,7 @@ public abstract class Effect {
         }
         String effectInfo = "|" + effectName + data.toString() + "|";
         Bukkit.getLogger().log(Level.INFO, "EffectInfo {0}", effectInfo);
-        String loreString = Util.hideString(effectInfo) + ChatColor.translateAlternateColorCodes('$', getHumanName());
+        String loreString = Util.hideString(effectInfo) + ChatColor.translateAlternateColorCodes('$', getHumanName(getOwnEffectData()));
         ItemMeta meta = item.getItemMeta();
         List<String> lore = meta.getLore();
         if (lore == null) {
@@ -177,7 +177,7 @@ public abstract class Effect {
         item.setItemMeta(meta);
     }
 
-    private String getHumanName() {
+    private String getHumanName(EffectData dataToUse) {
         Matcher matcher = keyPattern.matcher(humanName);
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
@@ -187,8 +187,8 @@ public abstract class Effect {
             if (showSign) {
                 key = key.substring(1);
             }
-            if (data.contains(key)) {
-                Object value = data.get(key);
+            if (dataToUse.contains(key)) {
+                Object value = dataToUse.get(key);
                 if (showSign && value instanceof Number && Math.signum(((Number) value).doubleValue()) == 1) {
                     sb.append('+'); //Don't need to append '-' sign, since Number.toString() will return the minus in front
                 }

@@ -29,7 +29,7 @@ public enum FilterGroups {
     SPADE(Material.DIAMOND_SPADE, Material.GOLD_SPADE, Material.IRON_SPADE, Material.WOOD_SPADE),
     ROD(Material.FISHING_ROD),
     TOOL(AXE, HOE, PICKAXE, SPADE, ROD),
-    ANY(ARMOR, TOOL, BOW, SWORD);
+    ANY(Material.BEACON);
 
     private Material[] valid;
     private FilterGroups[] children;
