@@ -8,13 +8,12 @@ package com.googlemail.mcdjuady.itemeffects;
 import com.googlemail.mcdjuady.itemeffects.effect.EffectItemListener;
 import com.googlemail.mcdjuady.itemeffects.filter.FilterGroups;
 import com.googlemail.mcdjuady.itemeffects.filter.ItemFilter;
-import com.googlemail.mcdjuady.itemeffects.commands.CommandEnchant;
 import com.googlemail.mcdjuady.itemeffects.commands.CommandGlobal;
+import com.googlemail.mcdjuady.itemeffects.commands.CommandItemEffects;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
@@ -25,21 +24,21 @@ import org.bukkit.plugin.java.JavaPlugin;
  *
  * @author Max
  */
-public class ItemEffects extends JavaPlugin{
-    
+public class ItemEffects extends JavaPlugin {
+
     private static ItemEffects instance;
-    
+
     public static ItemEffects getInstance() {
         if (instance == null) {
-            instance = (ItemEffects)Bukkit.getPluginManager().getPlugin("ItemEffects");
+            instance = (ItemEffects) Bukkit.getPluginManager().getPlugin("ItemEffects");
         }
         return instance;
     }
-    
+
     private EffectManager effectManager;
-    private Map<Integer,ItemFilter> effectSlots;
+    private Map<Integer, ItemFilter> effectSlots;
     private ItemFilter inHandFilter;
-    
+
     @Override
     public void onEnable() {
         if (!this.getDataFolder().exists()) {
@@ -52,10 +51,18 @@ public class ItemEffects extends JavaPlugin{
         effectManager = new EffectManager();
         Bukkit.getPluginManager().registerEvents(new EffectItemListener(effectManager), this);
         Bukkit.getPluginManager().registerEvents(new EffectEventListener(effectManager), this);
-        this.getCommand("iEnchant").setExecutor(new CommandEnchant());
+        this.getCommand("ItemEffects").setExecutor(new CommandItemEffects());
         this.getCommand("global").setExecutor(new CommandGlobal());
     }
-    
+
+    @Override
+    public void reloadConfig() {
+        super.reloadConfig();
+        effectSlots = new HashMap<>();
+        ConfigurationSection slotsSection = getConfig().getConfigurationSection("EffectSlots");
+        createFilters(slotsSection);
+    }
+
     private void createFilters(ConfigurationSection slotsSection) {
         for (String key : slotsSection.getKeys(false)) {
             if (key.equalsIgnoreCase("InHand")) {
@@ -104,7 +111,7 @@ public class ItemEffects extends JavaPlugin{
             }
         }
     }
-    
+
     private void updateConfig() {
         FileConfiguration config = this.getConfig();
         Configuration defaultConfig = config.getDefaults();
@@ -118,19 +125,17 @@ public class ItemEffects extends JavaPlugin{
         }
         this.saveConfig();
     }
-    
+
     public EffectManager getEffectManager() {
         return effectManager;
     }
-    
 
-    
-    public Map<Integer,ItemFilter> getEffectSlots() {
+    public Map<Integer, ItemFilter> getEffectSlots() {
         return effectSlots;
     }
-    
+
     public ItemFilter getInHandFilter() {
         return inHandFilter;
     }
-    
+
 }

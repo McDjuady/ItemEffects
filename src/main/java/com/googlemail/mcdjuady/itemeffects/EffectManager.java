@@ -7,9 +7,8 @@ package com.googlemail.mcdjuady.itemeffects;
 
 import com.googlemail.mcdjuady.itemeffects.effect.Effect;
 import static com.googlemail.mcdjuady.itemeffects.effect.Effect.dataPattern;
-import com.googlemail.mcdjuady.itemeffects.effect.PlayerEffects;
-import com.googlemail.mcdjuady.itemeffects.effect.EffectData;
 import com.googlemail.mcdjuady.itemeffects.effect.EffectHandler;
+import com.googlemail.mcdjuady.itemeffects.effect.PlayerEffects;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -17,8 +16,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
@@ -27,7 +28,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
-import org.bukkit.inventory.ItemStack;
 
 /**
  *
@@ -35,6 +35,9 @@ import org.bukkit.inventory.ItemStack;
  */
 public class EffectManager {
 
+    public final static int INHANDSLOT = -1;
+    public final static int GLOBALSLOT = -2;
+    
     private class RegisteredEffectListener {
 
         private final Class<? extends Effect> effectClass;
@@ -47,10 +50,10 @@ public class EffectManager {
             this.ignoreCanceled = ignoreCanceled;
         }
 
-        public void invoke(Effect effect, EffectData data, Player player, Event event) {
+        public void invoke(Effect effect, Event event) {
             try {
                 if (!(event instanceof Cancellable) || !(ignoreCanceled && ((Cancellable) event).isCancelled())) {
-                    method.invoke(effect, data, player, event);
+                    method.invoke(effect, event);
                 }
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 Bukkit.getLogger().log(Level.INFO, "Failed to call method {0} with {1} for {2}", new Object[]{method.getName(), event.getClass().getName(), effect.getEffectName()});
@@ -70,18 +73,18 @@ public class EffectManager {
 
         public EffectInfo(Class<? extends Effect> effectClass, ConfigurationSection defaultSection) throws NoSuchMethodException {
             this.defaultSection = defaultSection;
-            this.defaultConstructor = effectClass.getConstructor(ConfigurationSection.class, ItemStack.class, String.class);
+            this.defaultConstructor = effectClass.getConstructor(ConfigurationSection.class, String.class, PlayerEffects.class, int.class);
         }
 
-        public Effect create(ItemStack item, String info) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            return defaultConstructor.newInstance(defaultSection, item, info);
+        public Effect create(String info, PlayerEffects effects, int slot) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            return defaultConstructor.newInstance(defaultSection, info, effects, slot);
         }
 
-        public Effect create(ItemStack item, String info, ConfigurationSection configSection) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        public Effect create(ConfigurationSection configSection, String info, PlayerEffects effects, int slot) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             for (String key : defaultSection.getKeys(true)) {
                 configSection.addDefault(key, defaultSection.get(key));
             }
-            return defaultConstructor.newInstance(configSection, item, info);
+            return defaultConstructor.newInstance(configSection, info, effects, slot);
         }
 
     }
@@ -98,33 +101,37 @@ public class EffectManager {
         priorityListeners = new HashMap<>();
     }
 
-    public Effect createEffect(String effectName, ItemStack item, String lore) {
+    public Effect createEffect(String effectName, String lore, PlayerEffects playerEffects, int slot) {
         EffectInfo info = effects.get(effectName.toLowerCase());
         if (info == null) {
             return null;
         }
         try {
-            return info.create(item, lore);
+            return info.create(lore, playerEffects, slot);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Bukkit.getLogger().log(Level.SEVERE, "Failed to create Effect " + effectName + "! Args: [" + item.toString() + ", " + lore + "]", ex);
+            Bukkit.getLogger().log(Level.SEVERE, "Failed to create Effect " + effectName + "! Args: [" + lore + "]", ex);
             return null;
         }
     }
 
-    public Effect createEffect(ItemStack item, ConfigurationSection section) {
-        EffectInfo info = effects.get(section.getName());
+    public Effect createEffect(ConfigurationSection section, PlayerEffects playerEffects, int slot) {
+        EffectInfo info = effects.get(section.getName().toLowerCase());
         if (info == null) {
             return null;
         }
         try {
-            return info.create(item, null, section);
+            return info.create(section, null, playerEffects, slot);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Bukkit.getLogger().log(Level.SEVERE, "Failed to create Effect " + section.getName() + "! Args: [" + item.toString() + ", " + section.toString() + "]", ex);
+            Bukkit.getLogger().log(Level.SEVERE, "Failed to create Effect " + section.getName() + "! Args: [" + section.toString() + "]", ex);
             return null;
         }
     }
 
-    public Effect enchant(String effectName, ItemStack item, String... args) {
+    public Effect enchant(String effectName, Player player, int slot, String... args) {
+        return enchant(effectName, getPlayerEffects(player), slot, args);
+    }
+
+    public Effect enchant(String effectName, PlayerEffects playerEffects, int slot, String... args) {
         EffectInfo info = effects.get(effectName.toLowerCase());
         if (info == null) {
             Bukkit.getLogger().log(Level.INFO, "Invalid Effect {0}", effectName);
@@ -138,11 +145,11 @@ public class EffectManager {
         }
         effectInfo.append("|");
         try {
-            Effect effect = info.create(item, effectInfo.toString());
+            Effect effect = info.create(effectInfo.toString(), playerEffects, slot);
             effect.inscribe();
             return effect;
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Bukkit.getLogger().log(Level.SEVERE, "Failed to enchant wit Effect " + effectName + "! Args: [" + item.toString() + ", " + Arrays.toString(args) + "]", ex);
+            Bukkit.getLogger().log(Level.SEVERE, "Failed to enchant wit Effect " + effectName + "! Args: [" + Arrays.toString(args) + "]", ex);
             return null;
         }
     }
@@ -159,19 +166,19 @@ public class EffectManager {
                 continue; //skip non listener methods
             }
             Class<?>[] params = method.getParameterTypes();
-            if (params.length != 3 || !EffectData.class.isAssignableFrom(params[0]) || !Player.class.isAssignableFrom(params[1]) || !Event.class.isAssignableFrom(params[2])) {
+            if (params.length != 1 || !Event.class.isAssignableFrom(params[0])) {
                 continue; //wrong parameters
             }
             int priority = annotation.priority().getSlot();
             boolean ignoreCancelled = annotation.ignoreCancelled();
             Class<? extends Event>[] eventClasses = annotation.events();
             if (eventClasses.length == 0) { //if no events are set just listen for the one in the funciton
-                eventClasses = (Class<? extends Event>[]) Array.newInstance(params[2].getClass(), 1);
-                eventClasses[0] = (Class<? extends Event>) params[2];
+                eventClasses = (Class<? extends Event>[]) Array.newInstance(params[0].getClass(), 1);
+                eventClasses[0] = (Class<? extends Event>) params[0];
             }
             Bukkit.getLogger().info(Arrays.toString(eventClasses));
             for (Class<? extends Event> eventClass : eventClasses) {
-                if (!params[2].isAssignableFrom(eventClass)) {
+                if (!params[0].isAssignableFrom(eventClass)) {
                     Bukkit.getLogger().log(Level.INFO, "EventClass {0} isn't Assignable for {1}", new Object[]{eventClass.getName(), params[2].getName()});
                     continue;
                 }
@@ -232,14 +239,13 @@ public class EffectManager {
                 }
                 for (Effect effect : effectList) {
                     if (!effects.isDisabled() || effect.ignoresDisabled()) {
-                        EffectData data = effect.isGlobal() ? effects.getGlobalData(effect) : effect.getEffectData();
-                        listener.invoke(effect, data, effects.getPlayer(), event);
+                        listener.invoke(effect, event);
                     }
                 }
             }
         }
     }
-    
+
     //fire for a specific effect
     public void fireEvent(PlayerEffects effects, Effect effect, Event event) {
         if (effects.isDisabled() && !effect.ignoresDisabled()) {
@@ -256,7 +262,7 @@ public class EffectManager {
             }
             for (RegisteredEffectListener listener : list) {
                 if (listener.getEffectClass().equals(effect.getClass())) {
-                    listener.invoke(effect, effect.getEffectData(), effects.getPlayer(), event);
+                    listener.invoke(effect, event);
                 }
             }
         }

@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
@@ -44,8 +45,9 @@ public class PlayerEffects {
     private final Map<String, Effect> globalEffects;
     private final Map<String, List<Effect>> globalEffectList;
     private final Map<String, EffectData> globalEffectData;
-    private final Map<ItemStack, List<Effect>> itemEffects;
-    private final Map<Integer, ItemStack> itemInventory;
+    private final Map<Integer, List<Effect>> slotEffects;
+    private final Map<Integer, ItemStack> storedInventory;
+    private final Map<Integer, ItemStack> upToDateInventory;
     private final Map<Class<? extends Effect>, List<Effect>> effectCache;
 
     private boolean disabled;
@@ -54,10 +56,11 @@ public class PlayerEffects {
         this.player = player;
         globalEffects = new HashMap<>();
         globalEffectData = new HashMap<>();
-        itemEffects = new HashMap<>();
         effectCache = new HashMap<>();
-        itemInventory = new HashMap<>();
+        storedInventory = new HashMap<>();
         globalEffectList = new HashMap<>();
+        slotEffects = new HashMap<>();
+        upToDateInventory = new HashMap<>();
         disabled = false;
         new DelayedInventoryUpdate(this, false).runTaskLater(ItemEffects.getInstance(), 1);
     }
@@ -71,7 +74,8 @@ public class PlayerEffects {
     }
 
     public List<Effect> getEffectsForClass(Class<? extends Effect> effectClass) {
-        return effectCache.get(effectClass);
+        List<Effect> list = effectCache.get(effectClass);
+        return list == null ? new ArrayList<Effect>() : new ArrayList<>(list);
     }
 
     public final void updateInventory() {
@@ -79,53 +83,69 @@ public class PlayerEffects {
         PlayerInventory inv = player.getInventory();
         for (int i : slots.keySet()) {
             ItemStack newItem = inv.getItem(i);
-            ItemStack oldItem = itemInventory.get(i);
-            if (Objects.equals(newItem, oldItem) || ((newItem == null || newItem.getType() == Material.AIR) && (oldItem == null || oldItem.getType() == Material.AIR))) {
+            ItemStack oldItem = storedInventory.get(i);
+            if (((newItem == null || newItem.getType() == Material.AIR) && (oldItem == null || oldItem.getType() == Material.AIR)) || (newItem != null && oldItem != null && newItem.equals(oldItem))) {
                 continue;
             }
             ItemFilter filter = slots.get(i);
             if (oldItem != null && filter.isValid(oldItem)) {
-                itemInventory.put(i, null);
-                deactivateItem(oldItem);
+                deactivateItem(i);
+                upToDateInventory.put(i, null);
+                storedInventory.put(i, null);
             }
             if (newItem != null && filter.isValid(newItem)) {
-                itemInventory.put(i, newItem.clone());
-                activateItem(newItem);
+                storedInventory.put(i, newItem.clone());
+                upToDateInventory.put(i, newItem);
+                activateItem(i);
             }
         }
         updateItemInHand();
     }
 
     public final void deactivateAll() {
-        Set<ItemStack> items = new HashSet<>(itemInventory.values());
+        Set<ItemStack> items = new HashSet<>(storedInventory.values());
         for (ItemStack item : items) {
             deactivateItem(item);
+        }
+        //clean up left over global effects
+        List<List<Effect>> gList = new ArrayList<>(globalEffectList.values());
+        for (List<Effect> gEffects : gList) {
+            if (gEffects == null || gEffects.isEmpty()) {
+                continue;
+            }
+            for (Effect effect : gEffects) {
+                removeGlobalEffect(effect);
+            }
         }
     }
 
     public final void updateItemInHand() {
         ItemStack newItem = player.getItemInHand();
-        ItemStack oldItem = itemInventory.get(-1);
-        if (Objects.equals(newItem, oldItem) || ((newItem == null || newItem.getType() == Material.AIR) && (oldItem == null || oldItem.getType() == Material.AIR))) {
+        ItemStack oldItem = storedInventory.get(-1);
+        if (((newItem == null || newItem.getType() == Material.AIR) && (oldItem == null || oldItem.getType() == Material.AIR)) || (newItem != null && oldItem != null && newItem.equals(oldItem))) {
             return;
         }
         ItemFilter filter = ItemEffects.getInstance().getInHandFilter();
         if (oldItem != null && filter.isValid(oldItem)) {
-            itemInventory.put(-1, null);
-            deactivateItem(oldItem);
+            deactivateItem(-1);
+            upToDateInventory.put(-1, null);
+            storedInventory.put(-1, null);
         }
         if (newItem != null && filter.isValid(newItem)) {
-            itemInventory.put(-1, newItem.clone());
-            activateItem(newItem);
+            storedInventory.put(-1, newItem.clone());
+            upToDateInventory.put(-1, newItem);
+            activateItem(-1);
         }
     }
 
-    public final void activateItem(ItemStack item) {
-        if (itemEffects.containsKey(item) || !item.hasItemMeta()) {
+    public final void activateItem(int slot) {
+        //TODO rewrite so ItemActivateEvent follows event priorities
+        if (!storedInventory.containsKey(slot)) {
             return;
         }
+        ItemStack item = upToDateInventory.get(slot);
         List<String> lore = item.getItemMeta().getLore();
-        if (lore.isEmpty()) {
+        if (lore == null || lore.isEmpty()) {
             return;
         }
         List<Effect> itemEffectsList = new ArrayList<>();
@@ -137,28 +157,46 @@ public class PlayerEffects {
                 if (nameMatcher.find()) {
                     String effectName = nameMatcher.group();
                     effectName = effectName.substring(1, effectName.length() - 1);
-                    Effect effect = manager.createEffect(effectName, item, info);
+                    Effect effect = manager.createEffect(effectName, info, this, slot);
                     if (effect == null) {
                         continue;
                     }
                     itemEffectsList.add(effect);
-                    if (effect.isGlobal()) {
-                        addGlobalEffect(effect);
-                    } else {
-                        cacheEffect(effect);
-                    }
                 }
             }
         }
-        itemEffects.put(item, itemEffectsList);
+        slotEffects.put(slot, itemEffectsList);
         ItemActivateEvent event = new ItemActivateEvent(player, item);
         for (Effect e : itemEffectsList) {
             manager.fireEvent(this, e, event);
         }
+        if (event.isCancelled()) {
+            deactivateItem(slot);
+            return;
+        }
+        for (Effect e : itemEffectsList) {
+            if (e.isGlobal()) {
+                addGlobalEffect(e);
+            } else {
+                cacheEffect(e);
+            }
+        }
+    }
+
+    public final void activateItem(ItemStack item) {
+        if (item == null) {
+            return;
+        }
+        for (Entry<Integer, ItemStack> entry : upToDateInventory.entrySet()) {
+            if (item.equals(entry.getValue())) {
+                activateItem(entry.getKey());
+                return;
+            }
+        }
     }
 
     public void disable() {
-        for (List<Effect> effects : itemEffects.values()) {
+        for (List<Effect> effects : slotEffects.values()) {
             for (Effect effect : effects) {
                 if (effect.isGlobal()) {
                     continue; //globals are handled later
@@ -178,7 +216,7 @@ public class PlayerEffects {
 
     public void enable() {
         disabled = false;
-        for (List<Effect> effects : itemEffects.values()) {
+        for (List<Effect> effects : slotEffects.values()) {
             for (Effect effect : effects) {
                 if (effect.isGlobal()) {
                     continue; //globals are handled later
@@ -199,11 +237,15 @@ public class PlayerEffects {
         }
     }
 
-    public void deactivateItem(ItemStack item) {
-        if (!itemEffects.containsKey(item)) {
+    public void deactivateItem(int slot) {
+        if (!storedInventory.containsKey(slot)) {
             return;
         }
-        List<Effect> itemEffectsList = itemEffects.remove(item);
+        ItemStack item = upToDateInventory.get(slot);
+        List<Effect> itemEffectsList = slotEffects.remove(slot);
+        if (itemEffectsList == null) {
+            return;
+        }
         ItemDeactivateEvent event = new ItemDeactivateEvent(player, item);
         EffectManager manager = ItemEffects.getInstance().getEffectManager();
         for (Effect e : itemEffectsList) {
@@ -216,16 +258,29 @@ public class PlayerEffects {
         }
     }
 
-    private void removeGlobalEffect(Effect effect) {
+    public void deactivateItem(ItemStack item) {
+        if (item == null) {
+            return;
+        }
+        for (Entry<Integer, ItemStack> entry : upToDateInventory.entrySet()) {
+            if (item.equals(entry.getValue())) {
+                deactivateItem(entry.getKey());
+                return;
+            }
+        }
+    }
+
+    public void removeGlobalEffect(Effect effect) {
         if (!effect.isGlobal()) {
             return;
         }
         String effectName = effect.getEffectName();
         List<Effect> effectList = globalEffectList.get(effectName);
-        if (effectList != null) {
-            effectList.remove(effect);
+        if (effectList == null || !effectList.contains(effect)) {
+            return;
         }
-        if (effectList == null || effectList.isEmpty()) {
+        effectList.remove(effect);
+        if (effectList.isEmpty()) {
             Effect globalEffect = globalEffects.remove(effectName);
             ItemEffects.getInstance().getEffectManager().fireEvent(this, globalEffect, new GlobalDeactivateEvent(player, globalEffectData.get(effectName)));
             globalEffectData.remove(effectName);
@@ -237,30 +292,44 @@ public class PlayerEffects {
             EffectData data = null;
             for (Effect e : effectList) {
                 if (data == null) {
-                    data = e.getEffectData().clone();
+                    data = e.getOwnEffectData().clone();
                 } else {
-                    data.combine(e.getEffectData());
+                    data.combine(e.getOwnEffectData());
                 }
             }
             globalEffectData.put(effectName, data);
             ItemEffects.getInstance().getEffectManager().fireEvent(this, globalEffects.get(effectName), new GlobalUpdateEvent(player, data));
         } else {
             EffectData globalData = globalEffectData.get(effectName);
-            globalData.remove(effect.getEffectData());
+            globalData.remove(effect.getOwnEffectData());
             ItemEffects.getInstance().getEffectManager().fireEvent(this, globalEffects.get(effectName), new GlobalUpdateEvent(player, globalData));
         }
 
     }
 
-    private void addGlobalEffect(Effect effect) {
+    public void removeEffect(int slot, String effectName) {
+        List<Effect> slotList = slotEffects.get(slot);
+        if (slotList == null || slotList.isEmpty()) {
+            return;
+        }
+        for (Effect effect : slotList) {
+            if (effect.getEffectName().equalsIgnoreCase(effectName)) {
+                effect.remove();
+                break;
+            }
+        }
+        new DelayedInventoryUpdate(this, slot == EffectManager.INHANDSLOT).runTaskLater(ItemEffects.getInstance(), 1);
+    }
+    
+    public void addGlobalEffect(Effect effect) {
         if (!effect.isGlobal()) {
             return;
         }
         String effectName = effect.getEffectName();
         List<Effect> effectList = globalEffectList.get(effectName);
         EffectData globalData = globalEffectData.get(effectName);
-        if (globalData != null && globalData.isSimmilar(effect.getEffectData())) {
-            globalData.combine(effect.getEffectData());
+        if (globalData != null && globalData.isSimmilar(effect.getOwnEffectData())) {
+            globalData.combine(effect.getOwnEffectData());
             effectList.add(effect);
             ItemEffects.getInstance().getEffectManager().fireEvent(this, globalEffects.get(effectName), new GlobalUpdateEvent(player, globalData));
         } else {
@@ -268,7 +337,7 @@ public class PlayerEffects {
             effectList.add(effect);
             globalEffectList.put(effectName, effectList);
             globalEffects.put(effectName, effect);
-            globalData = effect.getEffectData().clone();
+            globalData = effect.getOwnEffectData().clone();
             globalEffectData.put(effectName, globalData);
             ItemEffects.getInstance().getEffectManager().fireEvent(this, effect, new GlobalActivateEvent(player, globalData));
             cacheEffect(effect);

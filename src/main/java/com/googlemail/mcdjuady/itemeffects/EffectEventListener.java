@@ -17,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerExpChangeEvent;
 
 /**
  *
@@ -64,5 +65,11 @@ public class EffectEventListener implements Listener {
             PlayerEffects effects = manager.getPlayerEffects((Player) e.getEntity());
             manager.fireEvent(effects, e);
         }
+    }
+    
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPlayerXP(PlayerExpChangeEvent e) {
+        PlayerEffects effects = manager.getPlayerEffects(e.getPlayer());
+        manager.fireEvent(effects, e);
     }
 }

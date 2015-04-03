@@ -23,8 +23,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.projectiles.ProjectileSource;
@@ -49,15 +51,19 @@ public abstract class Effect {
     private final boolean global;
     private final boolean recalculateGlobal;
     private final boolean ignoresDisabled;
-    private final ItemStack item;
+    private final int slot;
+    private final Inventory playerInventory;
+    private final PlayerEffects playerEffects;
 
     private EffectData data;
 
-    public Effect(ConfigurationSection effectConfig, ItemStack item, String effectInfo) throws InvalidConfigurationException {
+    public Effect(ConfigurationSection effectConfig, String effectInfo, PlayerEffects parentEffects, int slot) throws InvalidConfigurationException {
         this.effectId = effectConfig.getString("EffectId");
         this.effectName = effectConfig.getName();
         this.humanName = effectConfig.getString("Name");
-        this.item = item;
+        this.playerEffects = parentEffects;
+        this.slot = slot;
+        this.playerInventory = parentEffects.getPlayer().getInventory();
         EffectOptions options = this.getClass().getAnnotation(EffectOptions.class);
         if (options == null) {
             throw new InvalidConfigurationException("Missing options annotations for Effect " + effectName);
@@ -69,14 +75,14 @@ public abstract class Effect {
         Constructor<? extends EffectData> constructor = getDataConstructor();
         if (constructor != null) {
             try {
-                this.data = constructor.newInstance(getDataHelpers(), effectInfo, effectConfig.getConfigurationSection("EffectConfig"));
+                this.data = constructor.newInstance(getDataHelpers(), effectInfo, effectConfig.getConfigurationSection("EffectConfig"), effectName);
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 Bukkit.getLogger().log(Level.SEVERE, "Failed to instantiate DataClass " + options.dataClass().getSimpleName() + " for effect " + effectName + "! Using default EffectData class", ex);
             }
         }
         //use default data if data is not set
         if (data == null) {
-            this.data = new EffectData(getDataHelpers(), effectInfo, effectConfig.getConfigurationSection("EffectConfig"));
+            this.data = new EffectData(getDataHelpers(), effectInfo, effectConfig.getConfigurationSection("EffectConfig"), effectName);
         }
 
     }
@@ -96,19 +102,82 @@ public abstract class Effect {
         }
         helpers.put(this.getClass(), helperArray);
         try {
-            Constructor< ? extends EffectData> myDataConstructor = options.dataClass().getConstructor(EffectDataHelper[].class, String.class, ConfigurationSection.class);
+            Constructor< ? extends EffectData> myDataConstructor = options.dataClass().getConstructor(EffectDataHelper[].class, String.class, ConfigurationSection.class, String.class);
             dataConstructor.put(this.getClass(), myDataConstructor);
         } catch (NoSuchMethodException | SecurityException ex) {
             Bukkit.getLogger().log(Level.WARNING, "Invalid DataClass " + options.dataClass().getSimpleName() + " for effect " + effectName + "! Using default EffectData class", ex);
         }
     }
 
+    protected final void setData(String key, Object object, Player player) {
+        String oldInfo = "|" + effectName + data.toString() + "|";
+        data.set(key, object);
+        String newLore = Util.hideString("|" + effectName + data.toString() + "|") + getHumanName();
+        ItemStack item = getItem();
+        if (item == null) {
+            return;
+        }
+        ItemMeta meta = item.getItemMeta();
+        List<String> lore = meta.getLore();
+        if (lore == null || lore.isEmpty()) {
+            return;
+        }
+        Bukkit.getLogger().log(Level.INFO, "Search for {0}", oldInfo);
+        for (int i = 0; i < lore.size(); i++) {
+            String info = Util.unhideString(lore.get(i));
+            Bukkit.getLogger().log(Level.INFO, "Test {0}", info);
+            if (info.startsWith(oldInfo)) {
+                Bukkit.getLogger().info("Match");
+                lore.remove(i);
+                lore.add(i, newLore);
+                meta.setLore(lore);
+                item.setItemMeta(meta);
+                return;
+            }
+        }
+    }
+
+    public final void remove() {
+        ItemStack item = getItem();
+        if (item == null) {
+            return;
+        }
+        ItemMeta meta = item.getItemMeta();
+        List<String> lore = meta.getLore();
+        if (lore == null || lore.isEmpty()) {
+            return;
+        }
+        String effectInfo = "|" + effectName + data.toString() + "|";
+        for (int i = 0; i < lore.size(); i++) {
+            String info = Util.unhideString(lore.get(i));
+            if (info.startsWith(effectInfo)) {
+                lore.remove(i);
+                meta.setLore(lore);
+                item.setItemMeta(meta);
+                return;
+            }
+        }
+    }
+
     public final void inscribe() {
-        if (getItem() == null) {
+        ItemStack item = getItem();
+        if (item == null) {
             return;
         }
         String effectInfo = "|" + effectName + data.toString() + "|";
         Bukkit.getLogger().log(Level.INFO, "EffectInfo {0}", effectInfo);
+        String loreString = Util.hideString(effectInfo) + ChatColor.translateAlternateColorCodes('$', getHumanName());
+        ItemMeta meta = item.getItemMeta();
+        List<String> lore = meta.getLore();
+        if (lore == null) {
+            lore = new ArrayList<>();
+        }
+        lore.add(loreString);
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+    }
+
+    private String getHumanName() {
         Matcher matcher = keyPattern.matcher(humanName);
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
@@ -129,21 +198,13 @@ public abstract class Effect {
             }
         }
         matcher.appendTail(sb);
-        String loreString = Util.hideString(effectInfo) + ChatColor.translateAlternateColorCodes('$', sb.toString());
-        ItemMeta meta = getItem().getItemMeta();
-        List<String> lore = meta.getLore();
-        if (lore == null) {
-            lore = new ArrayList<>();
-        }
-        lore.add(loreString);
-        meta.setLore(lore);
-        getItem().setItemMeta(meta);
+        return sb.toString();
     }
 
     public final boolean isGlobal() {
         return global;
     }
-    
+
     public final boolean recalculateGlobal() {
         return recalculateGlobal;
     }
@@ -151,26 +212,47 @@ public abstract class Effect {
     public final boolean ignoresDisabled() {
         return ignoresDisabled;
     }
-    
+
     public final String getEffectName() {
         return effectName;
     }
 
-    public final EffectData getEffectData() {
-        return data;
+    public final <T extends EffectData> T getOwnEffectData() {
+        return (T) data;
     }
 
-    //Inaccurate for globalEffects
-    public final ItemStack getItem() {
-        return item;
+    public final <T extends EffectData> T getEffectData() {
+        if (this.isGlobal()) {
+            return (T) playerEffects.getGlobalData(this);
+        }
+        return (T) data;
     }
-    
+
+    //Will return null for global effects
+    public final ItemStack getItem() {
+        if (this.slot < -1) {
+            return null;
+        }
+        if (this.slot == -1) {
+            return getPlayer().getItemInHand();
+        }
+        return playerInventory.getItem(slot);
+    }
+
+    public final Player getPlayer() {
+        return playerEffects.getPlayer();
+    }
+
+    public final PlayerEffects getPlayerEffects() {
+        return playerEffects;
+    }
+
     public static Entity getAttacker(EntityDamageByEntityEvent e) {
         Entity ent = e.getDamager();
         if (ent instanceof Projectile) {
-            ProjectileSource source = ((Projectile)ent).getShooter();
+            ProjectileSource source = ((Projectile) ent).getShooter();
             if (source instanceof Entity) {
-                ent = (Entity)source;
+                ent = (Entity) source;
             }
         }
         return ent;
@@ -194,7 +276,7 @@ public abstract class Effect {
         hashCode = 37 * hashCode + effectName.hashCode();
         hashCode = 37 * hashCode + (global ? 1 : 0);
         hashCode = 37 * hashCode + humanName.hashCode();
-        hashCode = 37 * hashCode + (item == null ? 0 : item.hashCode());
+        hashCode = 37 * hashCode + (slot);
         hashCode = 37 * hashCode + (recalculateGlobal ? 1 : 0);
         return hashCode;
     }
@@ -223,7 +305,7 @@ public abstract class Effect {
         if (this.recalculateGlobal != other.recalculateGlobal) {
             return false;
         }
-        if (!Objects.equals(this.item, other.item)) {
+        if (!Objects.equals(this.slot, other.slot)) {
             return false;
         }
         return Objects.equals(this.data, other.data);

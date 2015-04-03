@@ -28,11 +28,13 @@ public class EffectData implements Cloneable {
     private final Set<String> forcedValues;
     private final Map<String, Object> data;
     private final Map<String, EffectDataCombiner> combiners;
+    private final String effectName;
 
-    public EffectData(EffectDataHelper[] options, String effectInfo, ConfigurationSection defaultConfig) {
-        data = new HashMap<>();
-        combiners = new HashMap<>();
-        forcedValues = new HashSet<>();
+    public EffectData(EffectDataHelper[] options, String effectInfo, ConfigurationSection defaultConfig, String effectName) {
+        this.data = new HashMap<>();
+        this.combiners = new HashMap<>();
+        this.forcedValues = new HashSet<>();
+        this.effectName = effectName;
         for (EffectDataHelper option : options) {
             Matcher matcher = option.matcher(effectInfo != null ? effectInfo : "");
             if (!option.canEnchant()) {
@@ -53,10 +55,21 @@ public class EffectData implements Cloneable {
         }
     }
 
-    public EffectData(Map<String, Object> data, Map<String, EffectDataCombiner> combiners, Set<String> forcedValues) {
+    public EffectData(Map<String, Object> data, Map<String, EffectDataCombiner> combiners, Set<String> forcedValues, String effectName) {
         this.data = data;
         this.combiners = combiners;
         this.forcedValues = forcedValues;
+        this.effectName = effectName;
+    }
+
+    protected void set(String key, Object object) {
+        if (!forcedValues.contains(key.toLowerCase())) {
+            data.put(key.toLowerCase(), object);
+        }
+    }
+
+    public String getEffectName() {
+        return effectName;
     }
 
     public Object get(String key) {
@@ -76,12 +89,7 @@ public class EffectData implements Cloneable {
         Object o = get(key);
         return o instanceof Number ? ((Number) o).intValue() : 0;
     }
-
-    public Float getFloat(String key) {
-        Object o = get(key);
-        return o instanceof Number ? ((Number) o).floatValue() : 0;
-    }
-
+    
     public Boolean getBoolean(String key) {
         Object o = get(key);
         return o instanceof Boolean ? (Boolean) o : Boolean.valueOf(String.valueOf(o));
@@ -110,15 +118,15 @@ public class EffectData implements Cloneable {
     @Override
     public EffectData clone() {
         try {
-            Constructor<? extends EffectData> constructor = this.getClass().getConstructor(Map.class, Map.class, Set.class);
-            return constructor.newInstance(new HashMap<>(data), new HashMap<>(combiners), new HashSet<>(forcedValues));
+            Constructor<? extends EffectData> constructor = this.getClass().getConstructor(Map.class, Map.class, Set.class, String.class);
+            return constructor.newInstance(new HashMap<>(data), new HashMap<>(combiners), new HashSet<>(forcedValues), effectName);
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             try {
-                Constructor<? extends EffectData> constructor = this.getClass().getDeclaredConstructor(Map.class, Map.class, Set.class);
-                return constructor.newInstance(new HashMap<>(data), new HashMap<>(combiners), new HashSet<>(forcedValues));
+                Constructor<? extends EffectData> constructor = this.getClass().getDeclaredConstructor(Map.class, Map.class, Set.class, String.class);
+                return constructor.newInstance(new HashMap<>(data), new HashMap<>(combiners), new HashSet<>(forcedValues), effectName);
             } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex1) {
                 Bukkit.getLogger().log(Level.WARNING, "Failed to find clone constructor for EffectDataClass " + this.getClass().getSimpleName() + "! Using default EffectData", ex);
-                return new EffectData(data, combiners, forcedValues);
+                return new EffectData(data, combiners, forcedValues, effectName);
             }
         }
     }
@@ -160,7 +168,5 @@ public class EffectData implements Cloneable {
         }
         return Objects.equals(this.combiners, other.combiners);
     }
-    
-    
 
 }

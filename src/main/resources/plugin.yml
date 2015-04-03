@@ -3,9 +3,10 @@
 name: ItemEffects
 author: McDjuady
 main: com.googlemail.mcdjuady.itemeffects.ItemEffects
-version: 0.1-SNAPSHOT
+version: 0.9-SNAPSHOT
 commands:
-    iEnchant:
-        usage: /<command> EFFECT [Data]
-    Global:
-        usage: /<command>
+    ItemEffects:
+        usage: |
+               /<command> enchant {Effect} [Parameters]
+               /<command> remove {Effect}
+        aliases: [ie]
