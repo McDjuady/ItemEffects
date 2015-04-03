@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -113,7 +112,8 @@ public class PlayerEffects {
             if (gEffects == null || gEffects.isEmpty()) {
                 continue;
             }
-            for (Effect effect : gEffects) {
+            List<Effect> list = new ArrayList<>(gEffects);
+            for (Effect effect : list) {
                 removeGlobalEffect(effect);
             }
         }
@@ -341,6 +341,15 @@ public class PlayerEffects {
             globalEffectData.put(effectName, globalData);
             ItemEffects.getInstance().getEffectManager().fireEvent(this, effect, new GlobalActivateEvent(player, globalData));
             cacheEffect(effect);
+        }
+    }
+    
+    public void updateGlobalEffects() {
+        EffectManager manager = ItemEffects.getInstance().getEffectManager();
+        for (String effectName : globalEffects.keySet()) {
+            Effect effect = globalEffects.get(effectName);
+            GlobalUpdateEvent event = new GlobalUpdateEvent(player, getGlobalData(effectName));
+            manager.fireEvent(this, effect, event);
         }
     }
 

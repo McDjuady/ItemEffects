@@ -62,7 +62,9 @@ public class EffectData implements Cloneable {
         this.effectName = effectName;
     }
 
-    protected void set(String key, Object object) {
+    //for set to reflect on the item, Effect.setData() should be called
+    //this method is inteded to be used with global effects created by plugins
+    public void set(String key, Object object) {
         if (!forcedValues.contains(key.toLowerCase())) {
             data.put(key.toLowerCase(), object);
         }

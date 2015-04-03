@@ -9,6 +9,8 @@ import com.googlemail.mcdjuady.itemeffects.EffectManager;
 import com.googlemail.mcdjuady.itemeffects.filter.FilterGroups;
 import com.googlemail.mcdjuady.itemeffects.ItemEffects;
 import com.googlemail.mcdjuady.itemeffects.filter.ItemFilter;
+import java.util.logging.Level;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -16,7 +18,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
@@ -101,11 +103,17 @@ public class EffectItemListener implements Listener {
         PlayerEffects pEffects = manager.getPlayerEffects(event.getPlayer());
         new DelayedInventoryUpdate(pEffects, false).runTaskLater(ItemEffects.getInstance(), 1);
     }
-
+    
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerDeath(PlayerDeathEvent event) {
-        PlayerEffects pEffects = manager.getPlayerEffects(event.getEntity());
-        new DelayedInventoryUpdate(pEffects, false).runTaskLater(ItemEffects.getInstance(), 1);
+    public void onPlayerDamage(EntityDamageEvent e) {
+        if (e.getEntity().getType() == EntityType.PLAYER) {
+            Player player = (Player)e.getEntity();
+            if (player.getHealth() <= e.getFinalDamage()) {
+                PlayerEffects pEffects = manager.getPlayerEffects(player);
+                pEffects.deactivateAll();
+                Bukkit.getLogger().log(Level.INFO, "Player damage {0} {1}", new Object[]{player.getHealth(),e.getFinalDamage()});
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
