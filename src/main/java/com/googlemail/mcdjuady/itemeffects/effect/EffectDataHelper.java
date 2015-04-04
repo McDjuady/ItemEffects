@@ -52,7 +52,7 @@ public class EffectDataHelper {
             try {
                 return valueOf.invoke(null, string);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                Bukkit.getLogger().log(Level.WARNING, "Failed to acess valueOf method!", ex);
+                //ignore, will cast instead
             }
         }
         try {

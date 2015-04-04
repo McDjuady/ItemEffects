@@ -34,13 +34,11 @@ public class DamageChangeListener implements Listener{
                 if (e.getCause() == EntityDamageEvent.DamageCause.POISON && e.getFinalDamage() > player.getHealth()) {
                     e.setDamage(Math.min(tickDamage,player.getHealth()+1D));
                 }
-                Bukkit.getLogger().log(Level.INFO, "Damage to {0}", e.getFinalDamage());
                 break;
             case FIRE_TICK:
                 double fireDamage = player.getMaxHealth() * 0.03 + .5; //3%
                 
                 e.setDamage(fireDamage);
-                Bukkit.getLogger().log(Level.INFO, "Fire damage to {0}", e.getFinalDamage());
                 break;
         }
     }

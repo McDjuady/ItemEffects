@@ -64,12 +64,12 @@ public class PlayerEffects {
         new DelayedInventoryUpdate(this, false).runTaskLater(ItemEffects.getInstance(), 1);
     }
 
-    public EffectData getGlobalData(Effect effect) {
+    public<T extends EffectData> T getGlobalData(Effect effect) {
         return getGlobalData(effect.getEffectName());
     }
 
-    public EffectData getGlobalData(String effectName) {
-        return globalEffectData.get(effectName);
+    public<T extends EffectData> T getGlobalData(String effectName) {
+        return (T)globalEffectData.get(effectName);
     }
 
     public List<Effect> getEffectsForClass(Class<? extends Effect> effectClass) {
@@ -77,6 +77,10 @@ public class PlayerEffects {
         return list == null ? new ArrayList<Effect>() : new ArrayList<>(list);
     }
 
+    public List<Effect> getGlobalEffects() {
+        return new ArrayList<>(globalEffects.values());
+    }
+    
     public final void updateInventory() {
         Map<Integer, ItemFilter> slots = ItemEffects.getInstance().getEffectSlots();
         PlayerInventory inv = player.getInventory();
@@ -226,13 +230,9 @@ public class PlayerEffects {
                 }
             }
         }
-        Bukkit.getLogger().log(Level.INFO, "Global Effects: {0}", globalEffects.values());
         for (Effect effect : globalEffects.values()) {
             if (!effect.ignoresDisabled()) {
-                Bukkit.getLogger().log(Level.INFO, "Reactivate {0}", effect.getEffectName());
                 ItemEffects.getInstance().getEffectManager().fireEvent(this, effect, new GlobalActivateEvent(player, getGlobalData(effect)));
-            } else {
-                Bukkit.getLogger().log(Level.INFO, "Skip {0}", effect.getEffectName());
             }
         }
     }

@@ -52,7 +52,6 @@ public class EffectEventListener implements Listener {
     public void onEntityAttack(EntityDamageByEntityEvent e) {
         Entity attacker = Effect.getAttacker(e);
         if (attacker.getType() == EntityType.PLAYER) {
-            Bukkit.getLogger().info("Fire for attacker");
             PlayerEffects effects = manager.getPlayerEffects((Player) attacker);
             manager.fireEvent(effects, e);
         }
@@ -61,7 +60,6 @@ public class EffectEventListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
         if (e.getEntity().getType() == EntityType.PLAYER) {
-            Bukkit.getLogger().info("Fire for defender");
             PlayerEffects effects = manager.getPlayerEffects((Player) e.getEntity());
             manager.fireEvent(effects, e);
         }

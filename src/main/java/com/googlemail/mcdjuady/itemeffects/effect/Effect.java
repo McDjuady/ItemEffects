@@ -122,12 +122,9 @@ public abstract class Effect {
         if (lore == null || lore.isEmpty()) {
             return;
         }
-        Bukkit.getLogger().log(Level.INFO, "Search for {0}", oldInfo);
         for (int i = 0; i < lore.size(); i++) {
             String info = Util.unhideString(lore.get(i));
-            Bukkit.getLogger().log(Level.INFO, "Test {0}", info);
             if (info.startsWith(oldInfo)) {
-                Bukkit.getLogger().info("Match");
                 lore.remove(i);
                 lore.add(i, newLore);
                 meta.setLore(lore);
@@ -165,7 +162,6 @@ public abstract class Effect {
             return;
         }
         String effectInfo = "|" + effectName + data.toString() + "|";
-        Bukkit.getLogger().log(Level.INFO, "EffectInfo {0}", effectInfo);
         String loreString = Util.hideString(effectInfo) + ChatColor.translateAlternateColorCodes('$', getHumanName(getOwnEffectData()));
         ItemMeta meta = item.getItemMeta();
         List<String> lore = meta.getLore();
@@ -177,7 +173,7 @@ public abstract class Effect {
         item.setItemMeta(meta);
     }
 
-    private String getHumanName(EffectData dataToUse) {
+    public String getHumanName(EffectData dataToUse) {
         Matcher matcher = keyPattern.matcher(humanName);
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
@@ -199,6 +195,10 @@ public abstract class Effect {
         }
         matcher.appendTail(sb);
         return sb.toString();
+    }
+    
+    public String getHumanName() {
+        return humanName;
     }
 
     public final boolean isGlobal() {

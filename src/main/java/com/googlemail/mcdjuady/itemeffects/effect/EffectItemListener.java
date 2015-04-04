@@ -111,7 +111,6 @@ public class EffectItemListener implements Listener {
             if (player.getHealth() <= e.getFinalDamage()) {
                 PlayerEffects pEffects = manager.getPlayerEffects(player);
                 pEffects.deactivateAll();
-                Bukkit.getLogger().log(Level.INFO, "Player damage {0} {1}", new Object[]{player.getHealth(),e.getFinalDamage()});
             }
         }
     }

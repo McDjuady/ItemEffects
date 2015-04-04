@@ -45,10 +45,8 @@ public class EffectData implements Cloneable {
                 String value = effectInfo.substring(matcher.start() + group.indexOf("=") + 1, matcher.start() + group.length() - 1); //extract the data, keep the Case
                 data.put(option.key().toLowerCase(), option.cast(value));
             } else if (defaultConfig != null && defaultConfig.contains(option.key())) { //use defaultConfig
-                Bukkit.getLogger().log(Level.INFO, "Use default config {0}", option.key());
                 data.put(option.key().toLowerCase(), option.cast(defaultConfig.getString(option.key())));
             } else { //use predefined default
-                Bukkit.getLogger().log(Level.INFO, "Use predefined default {0}", option.key());
                 data.put(option.key().toLowerCase(), option.cast(option.value()));
             }
             combiners.put(option.key().toLowerCase(), option.getCombiner());

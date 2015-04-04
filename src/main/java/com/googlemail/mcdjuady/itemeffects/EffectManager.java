@@ -174,7 +174,6 @@ public class EffectManager {
                 eventClasses = (Class<? extends Event>[]) Array.newInstance(params[0].getClass(), 1);
                 eventClasses[0] = (Class<? extends Event>) params[0];
             }
-            Bukkit.getLogger().info(Arrays.toString(eventClasses));
             for (Class<? extends Event> eventClass : eventClasses) {
                 if (!params[0].isAssignableFrom(eventClass)) {
                     Bukkit.getLogger().log(Level.INFO, "EventClass {0} isn't Assignable for {1}", new Object[]{eventClass.getName(), params[2].getName()});
