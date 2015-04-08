@@ -8,7 +8,6 @@ package com.googlemail.mcdjuady.itemeffects;
 import com.googlemail.mcdjuady.itemeffects.effect.EffectItemListener;
 import com.googlemail.mcdjuady.itemeffects.filter.FilterGroups;
 import com.googlemail.mcdjuady.itemeffects.filter.ItemFilter;
-import com.googlemail.mcdjuady.itemeffects.commands.CommandGlobal;
 import com.googlemail.mcdjuady.itemeffects.commands.CommandItemEffects;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +52,6 @@ public class ItemEffects extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new EffectItemListener(effectManager), this);
         Bukkit.getPluginManager().registerEvents(new EffectEventListener(effectManager), this);
         this.getCommand("ItemEffects").setExecutor(new CommandItemEffects());
-        this.getCommand("global").setExecutor(new CommandGlobal());
         for (Player player : Bukkit.getOnlinePlayers()) {
             effectManager.onPlayerJoin(player);
         }
