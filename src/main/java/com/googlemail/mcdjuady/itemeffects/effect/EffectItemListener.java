@@ -28,6 +28,7 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
@@ -38,7 +39,6 @@ import org.bukkit.inventory.ItemStack;
 public class EffectItemListener implements Listener {
 
     private final static ItemFilter armorFilter = new ItemFilter(FilterGroups.ARMOR);
-
 
     private final EffectManager manager;
 
@@ -82,7 +82,7 @@ public class EffectItemListener implements Listener {
             new DelayedInventoryUpdate(pEffects, false).runTaskLater(ItemEffects.getInstance(), 1);
         }
     }
-    
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent event) {
         InventoryHolder holder = event.getInventory().getHolder();
@@ -97,22 +97,29 @@ public class EffectItemListener implements Listener {
         PlayerEffects pEffects = manager.getPlayerEffects(event.getPlayer());
         new DelayedInventoryUpdate(pEffects, true).runTaskLater(ItemEffects.getInstance(), 1); //only update inHand since drops from within the inventory are already handled in onInventoryClick
     }
-    
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemPickup(PlayerPickupItemEvent event) {
         PlayerEffects pEffects = manager.getPlayerEffects(event.getPlayer());
         new DelayedInventoryUpdate(pEffects, false).runTaskLater(ItemEffects.getInstance(), 1);
     }
-    
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerDamage(EntityDamageEvent e) {
         if (e.getEntity().getType() == EntityType.PLAYER) {
-            Player player = (Player)e.getEntity();
+            Player player = (Player) e.getEntity();
             if (player.getHealth() <= e.getFinalDamage()) {
                 PlayerEffects pEffects = manager.getPlayerEffects(player);
                 pEffects.deactivateAll();
             }
         }
+    }
+
+    //update the inventory on respawn since some plugins may preserve the inventory of the player
+    @EffectHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerRespawn(PlayerRespawnEvent e) {
+        PlayerEffects pEffects = manager.getPlayerEffects(e.getPlayer());
+        new DelayedInventoryUpdate(pEffects, false).runTaskLater(ItemEffects.getInstance(), 1);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
