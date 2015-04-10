@@ -8,10 +8,7 @@ package com.googlemail.mcdjuady.itemeffects.effect;
 import com.googlemail.mcdjuady.itemeffects.EffectManager;
 import com.googlemail.mcdjuady.itemeffects.ItemEffects;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 

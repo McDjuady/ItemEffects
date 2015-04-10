@@ -7,7 +7,6 @@ package com.googlemail.mcdjuady.itemeffects;
 
 import com.googlemail.mcdjuady.itemeffects.effect.Effect;
 import com.googlemail.mcdjuady.itemeffects.effect.PlayerEffects;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;

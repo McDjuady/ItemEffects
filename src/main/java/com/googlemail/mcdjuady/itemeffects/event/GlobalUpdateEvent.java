@@ -8,7 +8,6 @@ package com.googlemail.mcdjuady.itemeffects.event;
 import com.googlemail.mcdjuady.itemeffects.effect.EffectData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.player.PlayerEvent;
 
 /**
  *
