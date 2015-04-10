@@ -5,10 +5,13 @@
  */
 package com.googlemail.mcdjuady.itemeffects;
 
+import com.comphenix.protocol.ProtocolLibrary;
 import com.googlemail.mcdjuady.itemeffects.effect.EffectItemListener;
 import com.googlemail.mcdjuady.itemeffects.filter.FilterGroups;
 import com.googlemail.mcdjuady.itemeffects.filter.ItemFilter;
 import com.googlemail.mcdjuady.itemeffects.commands.CommandItemEffects;
+import com.googlemail.mcdjuady.itemeffects.effect.InventoryPacketUpdateListener;
+import com.googlemail.mcdjuady.itemeffects.effect.InventoryUpdateTask;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +41,7 @@ public class ItemEffects extends JavaPlugin {
     private EffectManager effectManager;
     private Map<Integer, ItemFilter> effectSlots;
     private ItemFilter inHandFilter;
+    private InventoryUpdateTask updateTask;
 
     @Override
     public void onEnable() {
@@ -49,8 +53,11 @@ public class ItemEffects extends JavaPlugin {
         ConfigurationSection slotsSection = getConfig().getConfigurationSection("EffectSlots");
         createFilters(slotsSection);
         effectManager = new EffectManager();
-        Bukkit.getPluginManager().registerEvents(new EffectItemListener(effectManager), this);
+        updateTask = new InventoryUpdateTask();
+        ProtocolLibrary.getProtocolManager().addPacketListener(new InventoryPacketUpdateListener(this));
+        Bukkit.getPluginManager().registerEvents(new EffectItemListener(this), this);
         Bukkit.getPluginManager().registerEvents(new EffectEventListener(effectManager), this);
+        updateTask.runTaskTimer(this, 1, 1);
         this.getCommand("ItemEffects").setExecutor(new CommandItemEffects());
         for (Player player : Bukkit.getOnlinePlayers()) {
             effectManager.onPlayerJoin(player);
@@ -143,6 +150,10 @@ public class ItemEffects extends JavaPlugin {
 
     public ItemFilter getInHandFilter() {
         return inHandFilter;
+    }
+    
+    public InventoryUpdateTask getUpdateTask() {
+        return updateTask;
     }
 
 }

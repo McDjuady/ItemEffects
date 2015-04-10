@@ -9,8 +9,6 @@ import com.googlemail.mcdjuady.itemeffects.EffectManager;
 import com.googlemail.mcdjuady.itemeffects.filter.FilterGroups;
 import com.googlemail.mcdjuady.itemeffects.ItemEffects;
 import com.googlemail.mcdjuady.itemeffects.filter.ItemFilter;
-import java.util.logging.Level;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -41,16 +39,17 @@ public class EffectItemListener implements Listener {
     private final static ItemFilter armorFilter = new ItemFilter(FilterGroups.ARMOR);
 
     private final EffectManager manager;
+    private final ItemEffects plugin;
 
-    public EffectItemListener(EffectManager manager) {
-        this.manager = manager;
+    public EffectItemListener(ItemEffects plugin) {
+        this.plugin = plugin;
+        this.manager = plugin.getEffectManager();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemInHandChange(PlayerItemHeldEvent event) {
         Player player = event.getPlayer();
-        PlayerEffects pEffects = manager.getPlayerEffects(player);
-        new DelayedInventoryUpdate(pEffects, true).runTaskLater(ItemEffects.getInstance(), 1); //in hand could be anything, so always check
+        plugin.getUpdateTask().scheduleUpdate(player, true); //in hand could be anything, so always check
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -58,8 +57,7 @@ public class EffectItemListener implements Listener {
         if (event.hasItem() && event.useItemInHand() != Event.Result.DENY) {
             ItemStack item = event.getItem();
             if (armorFilter.isValid(item)) { //since only armor can be right clicked into the inventory only check then
-                PlayerEffects pEffects = manager.getPlayerEffects(event.getPlayer());
-                new DelayedInventoryUpdate(pEffects, false).runTaskLater(ItemEffects.getInstance(), 1);
+                plugin.getUpdateTask().scheduleUpdate(event.getPlayer(), false);
             }
         }
     }
@@ -69,8 +67,7 @@ public class EffectItemListener implements Listener {
         ItemStack currentItem = event.getCurrentItem();
         ItemStack cursorItem = event.getCursor();
         if (((currentItem != null && currentItem.getType() != Material.AIR) || (cursorItem != null && cursorItem.getType() != Material.AIR)) && event.getWhoClicked().getType() == EntityType.PLAYER) {
-            PlayerEffects pEffects = manager.getPlayerEffects((Player) event.getWhoClicked());
-            new DelayedInventoryUpdate(pEffects, false).runTaskLater(ItemEffects.getInstance(), 1);
+            plugin.getUpdateTask().scheduleUpdate((Player)event.getWhoClicked(), false);
         }
     }
 
@@ -78,8 +75,7 @@ public class EffectItemListener implements Listener {
     public void onItemPickup(InventoryPickupItemEvent event) {
         InventoryHolder holder = event.getInventory().getHolder();
         if (holder instanceof Player) {
-            PlayerEffects pEffects = manager.getPlayerEffects((Player) event.getInventory().getHolder());
-            new DelayedInventoryUpdate(pEffects, false).runTaskLater(ItemEffects.getInstance(), 1);
+            plugin.getUpdateTask().scheduleUpdate((Player)holder, false);
         }
     }
 
@@ -87,21 +83,18 @@ public class EffectItemListener implements Listener {
     public void onInventoryDrag(InventoryDragEvent event) {
         InventoryHolder holder = event.getInventory().getHolder();
         if (holder instanceof Player) {
-            PlayerEffects pEffects = manager.getPlayerEffects((Player) event.getInventory().getHolder());
-            new DelayedInventoryUpdate(pEffects, false).runTaskLater(ItemEffects.getInstance(), 1);
+            plugin.getUpdateTask().scheduleUpdate((Player)holder, false);
         }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemDrop(PlayerDropItemEvent event) {
-        PlayerEffects pEffects = manager.getPlayerEffects(event.getPlayer());
-        new DelayedInventoryUpdate(pEffects, true).runTaskLater(ItemEffects.getInstance(), 1); //only update inHand since drops from within the inventory are already handled in onInventoryClick
+        plugin.getUpdateTask().scheduleUpdate(event.getPlayer(), true); //only update inHand since drops from within the inventory are already handled in onInventoryClick
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemPickup(PlayerPickupItemEvent event) {
-        PlayerEffects pEffects = manager.getPlayerEffects(event.getPlayer());
-        new DelayedInventoryUpdate(pEffects, false).runTaskLater(ItemEffects.getInstance(), 1);
+        plugin.getUpdateTask().scheduleUpdate(event.getPlayer(), false);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -117,9 +110,8 @@ public class EffectItemListener implements Listener {
 
     //update the inventory on respawn since some plugins may preserve the inventory of the player
     @EffectHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerRespawn(PlayerRespawnEvent e) {
-        PlayerEffects pEffects = manager.getPlayerEffects(e.getPlayer());
-        new DelayedInventoryUpdate(pEffects, false).runTaskLater(ItemEffects.getInstance(), 1);
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+        plugin.getUpdateTask().scheduleUpdate(event.getPlayer(), false);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

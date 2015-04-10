@@ -17,6 +17,11 @@
             <version>1.8.3-R0.1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.comphenix.protocol</groupId>
+            <artifactId>ProtocolLib</artifactId>
+            <version>3.6.3-SNAPSHOT</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,4 +29,10 @@
         <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
     <name>ItemEffects</name>
+    <repositories>
+        <repository>
+            <id>shadowvolt-repo</id>
+            <url>http://ci.shadowvolt.com/plugin/repository/everything/</url>
+        </repository>
+    </repositories>
 </project>

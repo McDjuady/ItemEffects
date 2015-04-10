@@ -21,10 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -61,15 +59,15 @@ public class PlayerEffects {
         slotEffects = new HashMap<>();
         upToDateInventory = new HashMap<>();
         disabled = false;
-        new DelayedInventoryUpdate(this, false).runTaskLater(ItemEffects.getInstance(), 1);
+        ItemEffects.getInstance().getUpdateTask().scheduleUpdate(player);
     }
 
-    public<T extends EffectData> T getGlobalData(Effect effect) {
+    public <T extends EffectData> T getGlobalData(Effect effect) {
         return getGlobalData(effect.getEffectName());
     }
 
-    public<T extends EffectData> T getGlobalData(String effectName) {
-        return (T)globalEffectData.get(effectName);
+    public <T extends EffectData> T getGlobalData(String effectName) {
+        return (T) globalEffectData.get(effectName);
     }
 
     public List<Effect> getEffectsForClass(Class<? extends Effect> effectClass) {
@@ -80,11 +78,11 @@ public class PlayerEffects {
     public List<Effect> getEffects(int slot) {
         return slotEffects.get(slot);
     }
-    
+
     public List<Effect> getGlobalEffects() {
         return new ArrayList<>(globalEffects.values());
     }
-    
+
     public final void updateInventory() {
         Map<Integer, ItemFilter> slots = ItemEffects.getInstance().getEffectSlots();
         PlayerInventory inv = player.getInventory();
@@ -322,9 +320,9 @@ public class PlayerEffects {
                 break;
             }
         }
-        new DelayedInventoryUpdate(this, slot == EffectManager.INHANDSLOT).runTaskLater(ItemEffects.getInstance(), 1);
+        ItemEffects.getInstance().getUpdateTask().scheduleUpdate(player, slot == EffectManager.INHANDSLOT);
     }
-    
+
     public void addGlobalEffect(Effect effect) {
         if (!effect.isGlobal()) {
             return;
@@ -347,7 +345,7 @@ public class PlayerEffects {
             cacheEffect(effect);
         }
     }
-    
+
     public void updateGlobalEffects() {
         EffectManager manager = ItemEffects.getInstance().getEffectManager();
         for (String effectName : globalEffects.keySet()) {

@@ -4,6 +4,7 @@ name: ItemEffects
 author: McDjuady
 main: com.googlemail.mcdjuady.itemeffects.ItemEffects
 version: 0.9-SNAPSHOT
+depend: [ProtocolLib]
 commands:
     ItemEffects:
         usage: |

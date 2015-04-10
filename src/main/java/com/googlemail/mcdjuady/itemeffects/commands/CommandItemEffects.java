@@ -7,7 +7,6 @@ package com.googlemail.mcdjuady.itemeffects.commands;
 
 import com.googlemail.mcdjuady.itemeffects.EffectManager;
 import com.googlemail.mcdjuady.itemeffects.ItemEffects;
-import com.googlemail.mcdjuady.itemeffects.effect.DelayedInventoryUpdate;
 import com.googlemail.mcdjuady.itemeffects.effect.Effect;
 import com.googlemail.mcdjuady.itemeffects.effect.PlayerEffects;
 import org.bukkit.Material;
@@ -48,7 +47,6 @@ public class CommandItemEffects implements CommandExecutor {
             if (effect == null) {
                 sender.sendMessage("Failed to enchant! See console for details");
             }
-            new DelayedInventoryUpdate(ItemEffects.getInstance().getEffectManager().getPlayerEffects(player), true).runTaskLater(ItemEffects.getInstance(), 1);
             return true;
         }
         if (args[0].equalsIgnoreCase("remove") && args.length == 2) {
