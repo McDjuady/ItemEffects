@@ -16,7 +16,7 @@
 #Example:
 #1:
 #   Filter: - HELMET
-#           - Material.DIAMOND_SWORD
+#           - DIAMOND_SWORD
 #This filter will activate an item in slot 1 if it's a Helmet or a Diamond Sword 
 EffectSlots: 
     39:

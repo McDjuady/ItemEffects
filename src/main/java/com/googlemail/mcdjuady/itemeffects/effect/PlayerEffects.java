@@ -77,6 +77,10 @@ public class PlayerEffects {
         return list == null ? new ArrayList<Effect>() : new ArrayList<>(list);
     }
 
+    public List<Effect> getEffects(int slot) {
+        return slotEffects.get(slot);
+    }
+    
     public List<Effect> getGlobalEffects() {
         return new ArrayList<>(globalEffects.values());
     }
