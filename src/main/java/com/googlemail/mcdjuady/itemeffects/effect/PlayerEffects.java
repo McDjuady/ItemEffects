@@ -45,7 +45,6 @@ public class PlayerEffects {
     private final Map<String, List<Effect>> globalEffectList;
     private final Map<String, EffectData> globalEffectData;
     private final Map<Integer, List<Effect>> slotEffects;
-    private final Map<Integer, ItemStack> storedInventory;
     private final Map<Integer, ItemStack> upToDateInventory;
     private final Map<Class<? extends Effect>, List<Effect>> effectCache;
 
@@ -56,7 +55,6 @@ public class PlayerEffects {
         globalEffects = new HashMap<>();
         globalEffectData = new HashMap<>();
         effectCache = new HashMap<>();
-        storedInventory = new HashMap<>();
         globalEffectList = new HashMap<>();
         slotEffects = new HashMap<>();
         upToDateInventory = new HashMap<>();
@@ -90,7 +88,7 @@ public class PlayerEffects {
         PlayerInventory inv = player.getInventory();
         for (int i : slots.keySet()) {
             ItemStack newItem = inv.getItem(i);
-            ItemStack oldItem = storedInventory.get(i);
+            ItemStack oldItem = upToDateInventory.get(i);
             if (((newItem == null || newItem.getType() == Material.AIR) && (oldItem == null || oldItem.getType() == Material.AIR)) || (newItem != null && oldItem != null && newItem.equals(oldItem))) {
                 continue;
             }
@@ -98,10 +96,8 @@ public class PlayerEffects {
             if (oldItem != null && filter.isValid(oldItem)) {
                 deactivateItem(i);
                 upToDateInventory.put(i, null);
-                storedInventory.put(i, null);
             }
             if (newItem != null && filter.isValid(newItem)) {
-                storedInventory.put(i, newItem.clone());
                 upToDateInventory.put(i, newItem);
                 activateItem(i);
             }
@@ -110,10 +106,9 @@ public class PlayerEffects {
     }
 
     public final void deactivateAll() {
-        Set<Integer> slots = new HashSet<>(storedInventory.keySet());
+        Set<Integer> slots = new HashSet<>(upToDateInventory.keySet());
         for (int i : slots) {
             deactivateItem(i);
-            storedInventory.remove(i);
             upToDateInventory.remove(i);
         }
         //clean up left over global effects
@@ -130,19 +125,21 @@ public class PlayerEffects {
     }
 
     public final void updateItemInHand() {
+        updateItemInHand(false);
+    }
+
+    public final void updateItemInHand(boolean force) {
         ItemStack newItem = player.getItemInHand();
-        ItemStack oldItem = storedInventory.get(-1);
-        if (((newItem == null || newItem.getType() == Material.AIR) && (oldItem == null || oldItem.getType() == Material.AIR)) || (newItem != null && oldItem != null && newItem.equals(oldItem))) {
+        ItemStack oldItem = upToDateInventory.get(-1);
+        if (!force && (((newItem == null || newItem.getType() == Material.AIR) && (oldItem == null || oldItem.getType() == Material.AIR)) || (newItem != null && oldItem != null && newItem.equals(oldItem)))) {
             return;
         }
         ItemFilter filter = ItemEffects.getInstance().getInHandFilter();
         if (oldItem != null && filter.isValid(oldItem)) {
             deactivateItem(-1);
             upToDateInventory.put(-1, null);
-            storedInventory.put(-1, null);
         }
         if (newItem != null && filter.isValid(newItem)) {
-            storedInventory.put(-1, newItem.clone());
             upToDateInventory.put(-1, newItem);
             activateItem(-1);
         }
@@ -150,7 +147,7 @@ public class PlayerEffects {
 
     public final void activateItem(int slot) {
         //TODO rewrite so ItemActivateEvent follows event priorities
-        if (!storedInventory.containsKey(slot)) {
+        if (!upToDateInventory.containsKey(slot)) {
             return;
         }
         ItemStack item = upToDateInventory.get(slot);
@@ -244,7 +241,7 @@ public class PlayerEffects {
     }
 
     public void deactivateItem(int slot) {
-        if (!storedInventory.containsKey(slot)) {
+        if (!upToDateInventory.containsKey(slot)) {
             return;
         }
         ItemStack item = upToDateInventory.get(slot);

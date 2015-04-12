@@ -46,7 +46,10 @@ public class CommandItemEffects implements CommandExecutor {
             Effect effect = ItemEffects.getInstance().getEffectManager().enchant(args[1], player, EffectManager.INHANDSLOT, args);
             if (effect == null) {
                 sender.sendMessage("Failed to enchant! See console for details");
+                return true;
             }
+            PlayerEffects pEffects = ItemEffects.getInstance().getEffectManager().getPlayerEffects(player);
+            pEffects.updateItemInHand(true);
             return true;
         }
         if (args[0].equalsIgnoreCase("remove") && args.length == 2) {
@@ -62,6 +65,8 @@ public class CommandItemEffects implements CommandExecutor {
             }
             PlayerEffects effects = ItemEffects.getInstance().getEffectManager().getPlayerEffects(player);
             effects.removeEffect(EffectManager.INHANDSLOT, args[1]);
+            PlayerEffects pEffects = ItemEffects.getInstance().getEffectManager().getPlayerEffects(player);
+            pEffects.updateItemInHand(true);
             return true;
         }
         return false;
