@@ -21,8 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -108,9 +110,11 @@ public class PlayerEffects {
     }
 
     public final void deactivateAll() {
-        Set<ItemStack> items = new HashSet<>(storedInventory.values());
-        for (ItemStack item : items) {
-            deactivateItem(item);
+        Set<Integer> slots = new HashSet<>(storedInventory.keySet());
+        for (int i : slots) {
+            deactivateItem(i);
+            storedInventory.remove(i);
+            upToDateInventory.remove(i);
         }
         //clean up left over global effects
         List<List<Effect>> gList = new ArrayList<>(globalEffectList.values());

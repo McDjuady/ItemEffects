@@ -109,9 +109,10 @@ public class EffectItemListener implements Listener {
     }
 
     //update the inventory on respawn since some plugins may preserve the inventory of the player
-    @EffectHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
-        plugin.getUpdateTask().scheduleUpdate(event.getPlayer(), false);
+        PlayerEffects pEffects = manager.getPlayerEffects(event.getPlayer());
+        pEffects.updateInventory();
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
