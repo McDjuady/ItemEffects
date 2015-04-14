@@ -5,6 +5,7 @@
  */
 package com.googlemail.mcdjuady.itemeffects;
 
+import com.comphenix.protocol.events.ListenerPriority;
 import com.googlemail.mcdjuady.itemeffects.effect.Effect;
 import static com.googlemail.mcdjuady.itemeffects.effect.Effect.dataPattern;
 import com.googlemail.mcdjuady.itemeffects.effect.EffectHandler;
@@ -35,7 +36,7 @@ public class EffectManager {
 
     public final static int INHANDSLOT = -1;
     public final static int GLOBALSLOT = -2;
-    
+
     private class RegisteredEffectListener {
 
         private final Class<? extends Effect> effectClass;
@@ -243,6 +244,32 @@ public class EffectManager {
         }
     }
 
+    public void fireEvent(PlayerEffects effects, Event event, EventPriority priority) {
+        fireEvent(effects, event, priority.getSlot());
+    }
+    
+    public void fireEvent(PlayerEffects effects, Event event, int priority) {
+        Map<Integer, List<RegisteredEffectListener>> listeners = priorityListeners.get(event.getClass());
+        if (listeners == null) {
+            return;
+        }
+        List<RegisteredEffectListener> list = listeners.get(priority);
+        if (list == null) {
+            return;
+        }
+        for (RegisteredEffectListener listener : list) {
+            List<Effect> effectList = effects.getEffectsForClass(listener.getEffectClass());
+            if (effectList == null) {
+                continue;
+            }
+            for (Effect effect : effectList) {
+                if (!effects.isDisabled() || effect.ignoresDisabled()) {
+                    listener.invoke(effect, event);
+                }
+            }
+        }
+    }
+
     //fire for a specific effect
     public void fireEvent(PlayerEffects effects, Effect effect, Event event) {
         if (effects.isDisabled() && !effect.ignoresDisabled()) {
@@ -285,7 +312,7 @@ public class EffectManager {
         }
         playerEffects.remove(player.getUniqueId());
     }
-    
+
     public void onDisable() {
         for (PlayerEffects pEffects : playerEffects.values()) {
             pEffects.deactivateAll();

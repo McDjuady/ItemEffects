@@ -48,23 +48,89 @@ public class EffectEventListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOW)
-    public void onEntityAttack(EntityDamageByEntityEvent e) {
+    //EntityDamageByEntity events are fired sperately for every priority
+    //This is to ensure that defensive as well as offensive effects can interact in a good way
+    //Within each priority the Attacker will be notified first and then the defender, so the total flow looks like this
+    //Attacker.LOWEST,Defender.LOWEST,ATTACKER.Low,Defender.LOW etc
+    
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onEntityDamageByEntityLowest(EntityDamageByEntityEvent e) {
         Entity attacker = Effect.getAttacker(e);
         if (attacker.getType() == EntityType.PLAYER) {
             PlayerEffects effects = manager.getPlayerEffects((Player) attacker);
-            manager.fireEvent(effects, e);
+            manager.fireEvent(effects, e, EventPriority.LOWEST);
         }
-    }
-
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
         if (e.getEntity().getType() == EntityType.PLAYER) {
             PlayerEffects effects = manager.getPlayerEffects((Player) e.getEntity());
-            manager.fireEvent(effects, e);
+            manager.fireEvent(effects, e, EventPriority.LOWEST);
         }
     }
 
+    @EventHandler(priority = EventPriority.LOW)
+    public void onEntityDamageByEntityLow(EntityDamageByEntityEvent e) {
+        Entity attacker = Effect.getAttacker(e);
+        if (attacker.getType() == EntityType.PLAYER) {
+            PlayerEffects effects = manager.getPlayerEffects((Player) attacker);
+            manager.fireEvent(effects, e, EventPriority.LOW);
+        }
+        if (e.getEntity().getType() == EntityType.PLAYER) {
+            PlayerEffects effects = manager.getPlayerEffects((Player) e.getEntity());
+            manager.fireEvent(effects, e, EventPriority.LOW);
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onEntityDamageByEntityNormal(EntityDamageByEntityEvent e) {
+        Entity attacker = Effect.getAttacker(e);
+        if (attacker.getType() == EntityType.PLAYER) {
+            PlayerEffects effects = manager.getPlayerEffects((Player) attacker);
+            manager.fireEvent(effects, e, EventPriority.NORMAL);
+        }
+        if (e.getEntity().getType() == EntityType.PLAYER) {
+            PlayerEffects effects = manager.getPlayerEffects((Player) e.getEntity());
+            manager.fireEvent(effects, e, EventPriority.NORMAL);
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onEntityDamageByEntityHigh(EntityDamageByEntityEvent e) {
+        Entity attacker = Effect.getAttacker(e);
+        if (attacker.getType() == EntityType.PLAYER) {
+            PlayerEffects effects = manager.getPlayerEffects((Player) attacker);
+            manager.fireEvent(effects, e, EventPriority.HIGH);
+        }
+        if (e.getEntity().getType() == EntityType.PLAYER) {
+            PlayerEffects effects = manager.getPlayerEffects((Player) e.getEntity());
+            manager.fireEvent(effects, e, EventPriority.HIGH);
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onEntityDamageByEntityHighest(EntityDamageByEntityEvent e) {
+        Entity attacker = Effect.getAttacker(e);
+        if (attacker.getType() == EntityType.PLAYER) {
+            PlayerEffects effects = manager.getPlayerEffects((Player) attacker);
+            manager.fireEvent(effects, e, EventPriority.HIGHEST);
+        }
+        if (e.getEntity().getType() == EntityType.PLAYER) {
+            PlayerEffects effects = manager.getPlayerEffects((Player) e.getEntity());
+            manager.fireEvent(effects, e, EventPriority.HIGHEST);
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onEntityDamageByEntityMonitor(EntityDamageByEntityEvent e) {
+        Entity attacker = Effect.getAttacker(e);
+        if (attacker.getType() == EntityType.PLAYER) {
+            PlayerEffects effects = manager.getPlayerEffects((Player) attacker);
+            manager.fireEvent(effects, e, EventPriority.MONITOR);
+        }
+        if (e.getEntity().getType() == EntityType.PLAYER) {
+            PlayerEffects effects = manager.getPlayerEffects((Player) e.getEntity());
+            manager.fireEvent(effects, e, EventPriority.MONITOR);
+        }
+    }
+    
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerXP(PlayerExpChangeEvent e) {
         PlayerEffects effects = manager.getPlayerEffects(e.getPlayer());
