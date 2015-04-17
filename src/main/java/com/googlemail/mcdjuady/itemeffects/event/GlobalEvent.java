@@ -22,8 +22,8 @@ public abstract class GlobalEvent extends PlayerEvent{
         this.globalData = globalData; 
     }
     
-    public EffectData getGlobalData() {
-        return globalData;
+    public <T extends EffectData> T getGlobalData() {
+        return (T)globalData;
     }
     
 }

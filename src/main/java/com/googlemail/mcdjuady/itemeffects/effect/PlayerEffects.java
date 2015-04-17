@@ -301,11 +301,11 @@ public class PlayerEffects {
                 }
             }
             globalEffectData.put(effectName, data);
-            ItemEffects.getInstance().getEffectManager().fireEvent(this, globalEffects.get(effectName), new GlobalUpdateEvent(player, data));
+            ItemEffects.getInstance().getEffectManager().fireEvent(this, globalEffects.get(effectName), new GlobalUpdateEvent(player, data, effect.getOwnEffectData(), GlobalUpdateEvent.UpdateAction.REMOVE));
         } else {
             EffectData globalData = globalEffectData.get(effectName);
             globalData.remove(effect.getOwnEffectData());
-            ItemEffects.getInstance().getEffectManager().fireEvent(this, globalEffects.get(effectName), new GlobalUpdateEvent(player, globalData));
+            ItemEffects.getInstance().getEffectManager().fireEvent(this, globalEffects.get(effectName), new GlobalUpdateEvent(player, globalData, effect.getOwnEffectData(), GlobalUpdateEvent.UpdateAction.REMOVE));
         }
 
     }
@@ -332,9 +332,10 @@ public class PlayerEffects {
         List<Effect> effectList = globalEffectList.get(effectName);
         EffectData globalData = globalEffectData.get(effectName);
         if (globalData != null && globalData.isSimmilar(effect.getOwnEffectData())) {
-            globalData.combine(effect.getOwnEffectData());
             effectList.add(effect);
-            ItemEffects.getInstance().getEffectManager().fireEvent(this, globalEffects.get(effectName), new GlobalUpdateEvent(player, globalData));
+            //only recalculate on remove
+            globalData.combine(effect.getOwnEffectData());
+            ItemEffects.getInstance().getEffectManager().fireEvent(this, globalEffects.get(effectName), new GlobalUpdateEvent(player, globalData, effect.getOwnEffectData(), GlobalUpdateEvent.UpdateAction.ADD));
         } else {
             effectList = new ArrayList<>();
             effectList.add(effect);
@@ -347,11 +348,11 @@ public class PlayerEffects {
         }
     }
 
-    public void updateGlobalEffects() {
+    public void updateGlobalEffects(Object updateData) {
         EffectManager manager = ItemEffects.getInstance().getEffectManager();
         for (String effectName : globalEffects.keySet()) {
             Effect effect = globalEffects.get(effectName);
-            GlobalUpdateEvent event = new GlobalUpdateEvent(player, getGlobalData(effectName));
+            GlobalUpdateEvent event = new GlobalUpdateEvent(player, getGlobalData(effectName), updateData, GlobalUpdateEvent.UpdateAction.UPDATE);
             manager.fireEvent(this, effect, event);
         }
     }

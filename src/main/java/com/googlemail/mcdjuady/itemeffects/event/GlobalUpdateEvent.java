@@ -16,8 +16,27 @@ import org.bukkit.event.HandlerList;
 public class GlobalUpdateEvent extends GlobalEvent{
     private static final HandlerList handlers = new HandlerList();
 
-    public GlobalUpdateEvent(Player player, EffectData globalData) {
+    public enum UpdateAction {
+        ADD,
+        REMOVE,
+        UPDATE,
+    }
+    
+    private final Object updateData;
+    private final UpdateAction action;
+    
+    public GlobalUpdateEvent(Player player, EffectData globalData, Object updateData, UpdateAction action) {
         super(player, globalData);
+        this.updateData = updateData;
+        this.action = action;
+    }
+    
+    public <T> T getUpdateData() {
+        return (T)updateData;
+    }
+    
+    public UpdateAction getAction() {
+        return action;
     }
     
     @Override
