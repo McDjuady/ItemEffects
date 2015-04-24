@@ -5,6 +5,7 @@
  */
 package com.googlemail.mcdjuady.itemeffects.effect;
 
+import com.googlemail.mcdjuady.itemeffects.ItemEffects;
 import com.googlemail.mcdjuady.itemeffects.Util;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
@@ -54,6 +56,7 @@ public abstract class Effect {
     private final int slot;
     private final Inventory playerInventory;
     private final PlayerEffects playerEffects;
+    private final Logger pluginLogger;
 
     private EffectData data;
 
@@ -64,6 +67,7 @@ public abstract class Effect {
         this.playerEffects = parentEffects;
         this.slot = slot;
         this.playerInventory = parentEffects.getPlayer().getInventory();
+        this.pluginLogger = ItemEffects.getProvidingPlugin(this.getClass()).getLogger();
         EffectOptions options = this.getClass().getAnnotation(EffectOptions.class);
         if (options == null) {
             throw new InvalidConfigurationException("Missing options annotations for Effect " + effectName);
@@ -77,7 +81,7 @@ public abstract class Effect {
             try {
                 this.data = constructor.newInstance(getDataHelpers(), effectInfo, effectConfig.getConfigurationSection("EffectConfig"), effectName);
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                Bukkit.getLogger().log(Level.SEVERE, "Failed to instantiate DataClass " + options.dataClass().getSimpleName() + " for effect " + effectName + "! Using default EffectData class", ex);
+                pluginLogger.log(Level.SEVERE, "Failed to instantiate DataClass " + options.dataClass().getSimpleName() + " for effect " + effectName + "! Using default EffectData class", ex);
             }
         }
         //use default data if data is not set
@@ -105,7 +109,7 @@ public abstract class Effect {
             Constructor< ? extends EffectData> myDataConstructor = options.dataClass().getConstructor(EffectDataHelper[].class, String.class, ConfigurationSection.class, String.class);
             dataConstructor.put(this.getClass(), myDataConstructor);
         } catch (NoSuchMethodException | SecurityException ex) {
-            Bukkit.getLogger().log(Level.WARNING, "Invalid DataClass " + options.dataClass().getSimpleName() + " for effect " + effectName + "! Using default EffectData class", ex);
+            pluginLogger.log(Level.WARNING, "Invalid DataClass " + options.dataClass().getSimpleName() + " for effect " + effectName + "! Using default EffectData class", ex);
         }
     }
 

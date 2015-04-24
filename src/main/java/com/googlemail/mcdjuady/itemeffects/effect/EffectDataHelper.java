@@ -5,6 +5,7 @@
  */
 package com.googlemail.mcdjuady.itemeffects.effect;
 
+import com.googlemail.mcdjuady.itemeffects.ItemEffects;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
@@ -38,10 +39,10 @@ public class EffectDataHelper {
         try {
             combiner = option.combiner().getConstructor().newInstance();
         } catch (NoSuchMethodException | SecurityException ex) {
-            Bukkit.getLogger().log(Level.WARNING, "No empty constructor for " + option.combiner().getSimpleName() + "! Using AddCombiner", ex);
+            ItemEffects.getInstance().getLogger().log(Level.WARNING, "No empty constructor for " + option.combiner().getSimpleName() + "! Using AddCombiner", ex);
             combiner = new EffectDataAddCombiner();
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Bukkit.getLogger().log(Level.WARNING, "Failed to instantiate " + option.combiner().getSimpleName() + "! Using AddCombiner", ex);
+            ItemEffects.getInstance().getLogger().log(Level.WARNING, "Failed to instantiate " + option.combiner().getSimpleName() + "! Using AddCombiner", ex);
             combiner = new EffectDataAddCombiner();
         }
 

@@ -5,6 +5,7 @@
  */
 package com.googlemail.mcdjuady.itemeffects.effect;
 
+import com.googlemail.mcdjuady.itemeffects.ItemEffects;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  *
@@ -125,7 +127,7 @@ public class EffectData implements Cloneable {
                 Constructor<? extends EffectData> constructor = this.getClass().getDeclaredConstructor(Map.class, Map.class, Set.class, String.class);
                 return constructor.newInstance(new HashMap<>(data), new HashMap<>(combiners), new HashSet<>(forcedValues), effectName);
             } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex1) {
-                Bukkit.getLogger().log(Level.WARNING, "Failed to find clone constructor for EffectDataClass " + this.getClass().getSimpleName() + "! Using default EffectData", ex);
+                ItemEffects.getProvidingPlugin(this.getClass()).getLogger().log(Level.WARNING, "Failed to find clone constructor for EffectDataClass " + this.getClass().getSimpleName() + "! Using default EffectData", ex);
                 return new EffectData(data, combiners, forcedValues, effectName);
             }
         }

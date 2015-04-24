@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -55,8 +56,9 @@ public class EffectManager {
                     method.invoke(effect, event);
                 }
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                Bukkit.getLogger().log(Level.INFO, "Failed to call method {0} with {1} for {2}", new Object[]{method.getName(), event.getClass().getName(), effect.getEffectName()});
-                Bukkit.getLogger().log(Level.INFO, null, ex);
+                Logger log = ItemEffects.getProvidingPlugin(effectClass).getLogger();
+                log.log(Level.INFO, "Failed to call method {0} with {1} for {2}", new Object[]{method.getName(), event.getClass().getName(), effect.getEffectName()});
+                log.log(Level.INFO, null, ex);
             }
         }
 
@@ -69,9 +71,11 @@ public class EffectManager {
 
         private final Constructor<? extends Effect> defaultConstructor;
         private final ConfigurationSection defaultSection;
-
+        private final Logger pluginLogger;
+        
         public EffectInfo(Class<? extends Effect> effectClass, ConfigurationSection defaultSection) throws NoSuchMethodException {
             this.defaultSection = defaultSection;
+            this.pluginLogger = ItemEffects.getProvidingPlugin(effectClass).getLogger();
             this.defaultConstructor = effectClass.getConstructor(ConfigurationSection.class, String.class, PlayerEffects.class, int.class);
         }
 
@@ -84,6 +88,10 @@ public class EffectManager {
                 configSection.addDefault(key, defaultSection.get(key));
             }
             return defaultConstructor.newInstance(configSection, info, effects, slot);
+        }
+        
+        public Logger getPluginLogger() {
+            return pluginLogger;
         }
 
     }
@@ -108,7 +116,7 @@ public class EffectManager {
         try {
             return info.create(lore, playerEffects, slot);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Bukkit.getLogger().log(Level.SEVERE, "Failed to create Effect " + effectName + "! Args: [" + lore + "]", ex);
+            info.getPluginLogger().log(Level.SEVERE, "Failed to create Effect " + effectName + "! Args: [" + lore + "]", ex);
             return null;
         }
     }
@@ -121,7 +129,7 @@ public class EffectManager {
         try {
             return info.create(section, null, playerEffects, slot);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Bukkit.getLogger().log(Level.SEVERE, "Failed to create Effect " + section.getName() + "! Args: [" + section.toString() + "]", ex);
+            info.getPluginLogger().log(Level.SEVERE, "Failed to create Effect " + section.getName() + "! Args: [" + section.toString() + "]", ex);
             return null;
         }
     }
@@ -133,7 +141,7 @@ public class EffectManager {
     public Effect enchant(String effectName, PlayerEffects playerEffects, int slot, String... args) {
         EffectInfo info = effects.get(effectName.toLowerCase());
         if (info == null) {
-            Bukkit.getLogger().log(Level.INFO, "Invalid Effect {0}", effectName);
+            ItemEffects.getInstance().getLogger().log(Level.INFO, "Invalid Effect {0}", effectName);
             return null;
         }
         StringBuilder effectInfo = new StringBuilder();
@@ -148,7 +156,7 @@ public class EffectManager {
             effect.inscribe();
             return effect;
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Bukkit.getLogger().log(Level.SEVERE, "Failed to enchant wit Effect " + effectName + "! Args: [" + Arrays.toString(args) + "]", ex);
+            info.getPluginLogger().log(Level.SEVERE, "Failed to enchant wit Effect " + effectName + "! Args: [" + Arrays.toString(args) + "]", ex);
             return null;
         }
     }
@@ -157,7 +165,8 @@ public class EffectManager {
         if (effectClasses.containsKey(id)) {
             return; //TODO throw exception?
         }
-        Bukkit.getLogger().log(Level.INFO, "Registerning Effect {0} with class {1}", new Object[]{id, effectClass.getSimpleName()});
+        Logger logger = ItemEffects.getProvidingPlugin(effectClass).getLogger();
+        logger.log(Level.INFO, "Registerning Effect {0} with class {1}", new Object[]{id, effectClass.getSimpleName()});
         effectClasses.put(id, effectClass);
         for (Method method : effectClass.getMethods()) {
             EffectHandler annotation = method.getAnnotation(EffectHandler.class);
@@ -177,7 +186,7 @@ public class EffectManager {
             }
             for (Class<? extends Event> eventClass : eventClasses) {
                 if (!params[0].isAssignableFrom(eventClass)) {
-                    Bukkit.getLogger().log(Level.INFO, "EventClass {0} isn't Assignable for {1}", new Object[]{eventClass.getName(), params[2].getName()});
+                    logger.log(Level.INFO, "EventClass {0} isn't Assignable for {1}", new Object[]{eventClass.getName(), params[2].getName()});
                     continue;
                 }
                 Map<Integer, List<RegisteredEffectListener>> listenerMap = priorityListeners.get(eventClass);
@@ -199,15 +208,16 @@ public class EffectManager {
         String effectId = section.getString("EffectId");
         Class<? extends Effect> effectClass = effectClasses.get(effectId);
         if (effectClass == null) {
-            Bukkit.getLogger().log(Level.WARNING, "Invalid EffectId {0} in {1}", new Object[]{effectId, section.getName()});
+            ItemEffects.getInstance().getLogger().log(Level.WARNING, "Invalid EffectId {0} in {1}", new Object[]{effectId, section.getName()});
             return;
         }
+        Logger logger = ItemEffects.getProvidingPlugin(effectClass).getLogger();
         try {
             EffectInfo info = new EffectInfo(effectClass, section);
-            Bukkit.getLogger().log(Level.INFO, "Resgistered EffectConfig {0} for effect {1}", new Object[]{section.getName(), effectId});
+            logger.log(Level.INFO, "Resgistered EffectConfig {0} for effect {1}", new Object[]{section.getName(), effectId});
             effects.put(section.getName().toLowerCase(), info);
         } catch (NoSuchMethodException ex) {
-            Bukkit.getLogger().log(Level.SEVERE, "Failed to register effect " + section.getName() + "!", ex);
+            logger.log(Level.SEVERE, "Failed to register effect " + section.getName() + "!", ex);
         }
     }
 
