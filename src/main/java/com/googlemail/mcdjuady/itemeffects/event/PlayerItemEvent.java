@@ -27,8 +27,9 @@ public abstract class PlayerItemEvent extends PlayerEvent{
         }
         this.slot = slot;
         if (slot == EffectManager.INHANDSLOT) {
-            this.item = player.getItemInHand();
-        } else if (slot == EffectManager.GLOBALSLOT) {
+            slot = player.getInventory().getHeldItemSlot();
+        }
+        if (slot == EffectManager.GLOBALSLOT) {
             this.item = null;
         } else {
             this.item = player.getInventory().getItem(slot);

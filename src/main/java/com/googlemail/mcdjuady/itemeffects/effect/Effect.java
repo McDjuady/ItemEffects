@@ -5,6 +5,7 @@
  */
 package com.googlemail.mcdjuady.itemeffects.effect;
 
+import com.googlemail.mcdjuady.itemeffects.EffectManager;
 import com.googlemail.mcdjuady.itemeffects.ItemEffects;
 import com.googlemail.mcdjuady.itemeffects.Util;
 import java.lang.reflect.Constructor;
@@ -316,6 +317,6 @@ public abstract class Effect {
     }
 
     public final int getSlot() {
-        return slot;
+        return slot == EffectManager.INHANDSLOT ? getPlayer().getInventory().getHeldItemSlot() : slot;
     }
 }
