@@ -21,10 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -173,7 +171,7 @@ public class PlayerEffects {
             }
         }
         slotEffects.put(slot, itemEffectsList);
-        ItemActivateEvent event = new ItemActivateEvent(player, item);
+        ItemActivateEvent event = new ItemActivateEvent(player, slot);
         for (Effect e : itemEffectsList) {
             manager.fireEvent(this, e, event);
         }
@@ -209,7 +207,7 @@ public class PlayerEffects {
                     continue; //globals are handled later
                 }
                 if (!effect.ignoresDisabled()) {
-                    ItemEffects.getInstance().getEffectManager().fireEvent(this, effect, new ItemDeactivateEvent(player, effect.getItem()));
+                    ItemEffects.getInstance().getEffectManager().fireEvent(this, effect, new ItemDeactivateEvent(player, effect.getSlot()));
                 }
             }
         }
@@ -229,7 +227,7 @@ public class PlayerEffects {
                     continue; //globals are handled later
                 }
                 if (!effect.ignoresDisabled()) {
-                    ItemEffects.getInstance().getEffectManager().fireEvent(this, effect, new ItemActivateEvent(player, effect.getItem()));
+                    ItemEffects.getInstance().getEffectManager().fireEvent(this, effect, new ItemActivateEvent(player, effect.getSlot()));
                 }
             }
         }
@@ -244,12 +242,11 @@ public class PlayerEffects {
         if (!upToDateInventory.containsKey(slot)) {
             return;
         }
-        ItemStack item = upToDateInventory.get(slot);
         List<Effect> itemEffectsList = slotEffects.remove(slot);
         if (itemEffectsList == null) {
             return;
         }
-        ItemDeactivateEvent event = new ItemDeactivateEvent(player, item);
+        ItemDeactivateEvent event = new ItemDeactivateEvent(player, slot);
         EffectManager manager = ItemEffects.getInstance().getEffectManager();
         for (Effect e : itemEffectsList) {
             manager.fireEvent(this, e, event);

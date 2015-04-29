@@ -314,4 +314,8 @@ public abstract class Effect {
         }
         return Objects.equals(this.data, other.data);
     }
+
+    public final int getSlot() {
+        return slot;
+    }
 }

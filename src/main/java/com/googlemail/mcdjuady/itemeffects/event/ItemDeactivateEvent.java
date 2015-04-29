@@ -5,10 +5,8 @@
  */
 package com.googlemail.mcdjuady.itemeffects.event;
 
-import com.googlemail.mcdjuady.itemeffects.event.PlayerItemEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-import org.bukkit.inventory.ItemStack;
 
 /**
  *
@@ -18,8 +16,8 @@ public class ItemDeactivateEvent extends PlayerItemEvent{
     
     private static final HandlerList handlers = new HandlerList();
 
-    public ItemDeactivateEvent(Player player, ItemStack item) {
-        super(player, item);
+    public ItemDeactivateEvent(Player player, int slot) {
+        super(player, slot);
     }
     
     @Override

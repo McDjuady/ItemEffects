@@ -8,7 +8,6 @@ package com.googlemail.mcdjuady.itemeffects.event;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
-import org.bukkit.inventory.ItemStack;
 
 /**
  *
@@ -19,8 +18,8 @@ public class ItemActivateEvent extends PlayerItemEvent implements Cancellable{
     private static final HandlerList handlers = new HandlerList();
     private boolean canceled;
 
-    public ItemActivateEvent(Player player, ItemStack item) {
-        super(player, item);
+    public ItemActivateEvent(Player player, int slot) {
+        super(player, slot);
     }
     
     @Override
