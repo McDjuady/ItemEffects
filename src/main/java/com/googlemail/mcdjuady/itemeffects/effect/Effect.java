@@ -21,7 +21,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -318,5 +317,9 @@ public abstract class Effect {
 
     public final int getSlot() {
         return slot == EffectManager.INHANDSLOT ? getPlayer().getInventory().getHeldItemSlot() : slot;
+    }
+    
+    public final boolean isActive() {
+        return getPlayerEffects().getEffects(slot).contains(this) && (ignoresDisabled() || !getPlayerEffects().isDisabled());
     }
 }
