@@ -130,7 +130,7 @@ public class EffectEventListener implements Listener {
             manager.fireEvent(effects, e, EventPriority.MONITOR);
         }
     }
-    
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerXP(PlayerExpChangeEvent e) {
         PlayerEffects effects = manager.getPlayerEffects(e.getPlayer());

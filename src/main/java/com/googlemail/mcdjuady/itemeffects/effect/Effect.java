@@ -320,6 +320,7 @@ public abstract class Effect {
     }
     
     public final boolean isActive() {
-        return getPlayerEffects().getEffects(slot).contains(this) && (ignoresDisabled() || !getPlayerEffects().isDisabled());
+        List<Effect> effects = getPlayerEffects().getEffects(slot);
+        return effects != null && (ignoresDisabled() || !getPlayerEffects().isDisabled()) && getPlayerEffects().getEffects(slot).contains(this) ;
     }
 }
